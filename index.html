@@ -258,8 +258,62 @@
 
 <script>
 const ADMIN = 'admin';
+// นำ URL ที่ได้จากขั้นตอนที่ 3 มาวางในเครื่องหมายคำพูดด้านล่างนี้
+const API_URL = "https://script.google.com/macros/s/AKfycbzINcJHMIKDffUng2V6s2JGdHpKWT-BeYu3riRf84ioLtcjBY_VLUv8MCoJxifCYYzk/exec"; 
+
 let state = {
-  users: JSON.parse(localStorage.getItem('ppac_users') || '{"admin":{"pass":"ppac2024","role":"admin"}}'),
+  users: { "admin": { "pass": "ppac2024", "role": "admin" } }, // ค่าเริ่มต้นระหว่างรอโหลด
+  docs: [],
+  logs: [],
+  curUser: null, curRole: null
+};
+
+let titleClicks=0, titleTimer=null, docIconClicks=0, docIconTimer=null, isDocAdmin=false;
+
+// สร้างหน้าจอโหลดข้อมูล
+const btnLogin = document.getElementById('btn-login');
+btnLogin.disabled = true;
+btnLogin.textContent = 'กำลังโหลดข้อมูล...';
+
+// ฟังก์ชันดึงข้อมูลจาก Google Sheets ตอนเปิดเว็บ
+async function loadDataFromGoogle() {
+  try {
+    const response = await fetch(API_URL);
+    const data = await response.json();
+    state.users = data.users || state.users;
+    state.docs = data.docs || [];
+    state.logs = data.logs || [];
+    
+    // เปิดให้กดปุ่ม Login ได้
+    btnLogin.disabled = false;
+    btnLogin.textContent = 'เข้าสู่ระบบ';
+  } catch (error) {
+    console.error('โหลดข้อมูลล้มเหลว:', error);
+    btnLogin.textContent = 'โหลดข้อมูลล้มเหลว (ลองรีเฟรช)';
+  }
+}
+
+// ฟังก์ชันเซฟข้อมูลไปที่ Google Sheets
+function save() {
+  // บันทึกลง localStorage สำรองไว้ด้วย (เผื่อเน็ตหลุด)
+  localStorage.setItem('ppac_users', JSON.stringify(state.users));
+  localStorage.setItem('ppac_docs',  JSON.stringify(state.docs));
+  localStorage.setItem('ppac_logs',  JSON.stringify(state.logs));
+
+  // ส่งข้อมูลไปบันทึกที่ Google Sheets (ทำแบบ Background)
+  fetch(API_URL, {
+    method: 'POST',
+    mode: 'no-cors', // ใช้ no-cors ป้องกันปัญหาเรื่อง Cross-Origin
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ users: state.users, docs: state.docs, logs: state.logs })
+  }).catch(err => console.log('เซฟลง Sheet ล้มเหลว:', err));
+}
+
+// เริ่มโหลดข้อมูลทันทีที่เปิดเว็บ
+loadDataFromGoogle();
+
+// โค้ดส่วนที่เหลือของคุณเหมือนเดิม...
+function showToast(msg) {
   docs:  JSON.parse(localStorage.getItem('ppac_docs')  || '[]'),
   logs:  JSON.parse(localStorage.getItem('ppac_logs')  || '[]'),
   curUser: null, curRole: null
