@@ -278,41 +278,17 @@ const btnLogin = document.getElementById('btn-login');
 btnLogin.disabled = true;
 btnLogin.textContent = 'กำลังโหลดข้อมูล...';
 
-// ฟังก์ชันดึงข้อมูลจาก Google Sheets ตอนเปิดเว็บ
-async function loadDataFromGoogle() {
-  try {
-    const response = await fetch(API_URL);
-    const data = await response.json();
-    state.users = data.users || state.users;
-    state.docs = data.docs || [];
-    state.logs = data.logs || [];
-    
-    // เปิดให้กดปุ่ม Login ได้
-    btnLogin.disabled = false;
-    btnLogin.textContent = 'เข้าสู่ระบบ';
-    
-    // หลังจากโหลดข้อมูลเสร็จแล้ว ตรวจสอบว่าเคยเข้าสู่ระบบไว้หรือไม่
-    restoreSession();
-  } catch (error) {
-    console.error('โหลดข้อมูลล้มเหลว:', error);
-    // หากโหลดพลาด ยังเปิดปุ่มให้เข้าด้วยระบบออฟไลน์ (จาก localStorage) ได้
-    btnLogin.disabled = false;
-    btnLogin.textContent = 'เข้าสู่ระบบ (ออฟไลน์)';
-    restoreSession();
-  }
-}
-
-// เช็คสถานะการล็อกอินที่จำไว้
-function restoreSession() {
+// ฟังก์ชันเช็คสถานะการล็อกอินแบบทันที (Instant Load)
+function restoreSessionFast() {
   let session = JSON.parse(localStorage.getItem('ppac_session'));
-  
   if (session && (Date.now() - session.lastActive <= SESSION_TIMEOUT)) {
-    // เช็คว่า user นี้ยังมีอยู่ในระบบหรือไม่ (ป้องกันกรณีแอดมินลบ user ไปแล้ว)
-    if (state.users[session.user]) {
+    // ใช้ข้อมูลจากเครื่องเพื่อให้หน้าจอแสดงผลได้ทันทีแบบ 0 วินาที
+    let localUsers = JSON.parse(localStorage.getItem('ppac_users')) || state.users;
+    if (localUsers[session.user]) {
+      state.users = localUsers;
       state.curUser = session.user;
       state.curRole = state.users[session.user].role;
       
-      // ข้ามหน้าล็อกอิน ไปหน้าหลักทันที
       document.getElementById('login-screen').classList.add('hidden');
       const ms = document.getElementById('main-screen');
       ms.classList.remove('hidden'); ms.style.display = 'flex';
@@ -322,13 +298,50 @@ function restoreSession() {
       document.getElementById('greet-name').textContent = state.curUser;
       if (state.curRole === 'admin') document.getElementById('tab-log-btn').style.display = '';
       
+      state.docs = JSON.parse(localStorage.getItem('ppac_docs')) || [];
+      state.logs = JSON.parse(localStorage.getItem('ppac_logs')) || [];
+      
       renderDocs(); renderLog();
-      startSessionTimer(); // เริ่มจับเวลา 3 ชั่วโมง
-      return;
+      startSessionTimer(); 
+      return true;
     }
   }
-  // ถ้าหมดเวลา 3 ชม. หรือ User ไม่มีแล้ว ให้ล้างค่าทิ้ง (ให้ล็อกอินใหม่)
   localStorage.removeItem('ppac_session');
+  return false;
+}
+
+// โหลด session ขึ้นมาแสดงผลบนหน้าจอทันที ไม่ต้องรอเน็ต
+restoreSessionFast();
+
+// ฟังก์ชันดึงข้อมูลจาก Google Sheets เพื่ออัปเดตเบื้องหลัง
+async function loadDataFromGoogle() {
+  try {
+    const response = await fetch(API_URL);
+    const data = await response.json();
+    state.users = data.users || state.users;
+    state.docs = data.docs || [];
+    state.logs = data.logs || [];
+    
+    // เปิดให้กดปุ่ม Login ได้ถ้าไม่ได้อยู่ในระบบ
+    btnLogin.disabled = false;
+    btnLogin.textContent = 'เข้าสู่ระบบ';
+    
+    // อัปเดตข้อมูลล่าสุดบนหน้าจอ (ถ้าอยู่ในระบบอยู่แล้ว)
+    if (state.curUser) {
+      renderDocs();
+      renderLog();
+      if (state.curRole === 'admin' && !document.getElementById('modal-adduser').classList.contains('hidden')) {
+          renderUserList();
+      }
+    } else {
+      // เช็คซ้ำ เผื่อว่าข้อมูลใหม่ที่ดึงมามี User นี้แล้ว
+      restoreSessionFast();
+    }
+  } catch (error) {
+    console.error('โหลดข้อมูลล้มเหลว:', error);
+    btnLogin.disabled = false;
+    btnLogin.textContent = 'เข้าสู่ระบบ (ออฟไลน์)';
+  }
 }
 
 // ฟังก์ชันจับความเคลื่อนไหว (เพื่อต่อเวลา Session)
@@ -368,6 +381,7 @@ function save() {
 
   fetch(API_URL, {
     method: 'POST',
+    keepalive: true, // ป้องกันการยกเลิก Fetch เวลาเปลี่ยนแท็บด่วน
     headers: {
       'Content-Type': 'text/plain;charset=utf-8'
     },
@@ -375,7 +389,7 @@ function save() {
   }).catch(err => console.log('เซฟลง Sheet ล้มเหลว:', err));
 }
 
-// เริ่มโหลดข้อมูลทันทีที่เปิดเว็บ
+// เริ่มดึงข้อมูลเบื้องหลัง
 loadDataFromGoogle();
 
 function showToast(msg) {
