@@ -302,8 +302,9 @@ function save() {
 
   fetch(API_URL, {
     method: 'POST',
-    mode: 'no-cors',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'text/plain;charset=utf-8'
+    },
     body: JSON.stringify({ users: state.users, docs: state.docs, logs: state.logs })
   }).catch(err => console.log('เซฟลง Sheet ล้มเหลว:', err));
 }
