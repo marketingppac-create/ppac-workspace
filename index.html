@@ -7,76 +7,761 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
-    html,body{height:100%;overflow:hidden}
-    body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',sans-serif;background:#f5f5f7;color:#1d1d1f}
-    .page{height:100%;display:flex;flex-direction:column}
+    html,body{height:100%; overflow:hidden;}
+    body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',sans-serif;background:#f5f5f7;color:#1d1d1f;}
+    .page{height:100%;background:#f5f5f7;display:flex;flex-direction:column}
     .hidden{display:none!important}
-    .wrap{flex:1;display:flex;flex-direction:column;overflow:hidden}
+    .blur-bg{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+    .blur-bg span{position:absolute;border-radius:50%;filter:blur(80px);opacity:.35}
+    .blob1{width:600px;height:600px;background:#a8d8ea;top:-100px;left:-100px}
+    .blob2{width:500px;height:500px;background:#c3aed6;bottom:-80px;right:-80px}
+    .blob3{width:400px;height:400px;background:#b8e0d2;top:40%;left:40%;transform:translate(-50%,-50%)}
+    .wrap{position:relative;z-index:1;flex:1;display:flex;flex-direction:column;overflow:hidden;}
+    .glass{background:rgba(255,255,255,0.72);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border:1px solid rgba(255,255,255,0.9);border-radius:18px;box-shadow:0 2px 20px rgba(0,0,0,0.06)}
     
     #login-screen{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem}
-    .login-card{background:rgba(255,255,255,0.8);backdrop-filter:blur(20px);border:1px solid rgba(0,0,0,0.1);border-radius:18px;padding:2rem;width:350px}
+    .hero-title{font-size:clamp(36px,5vw,64px);font-weight:700;letter-spacing:-1.5px;color:#1d1d1f;text-align:center;line-height:1.05;margin-bottom:8px}
+    .hero-sub{font-size:16px;color:#6e6e73;text-align:center;margin-bottom:48px;font-weight:400;letter-spacing:-.2px}
+    .login-card{width:100%;max-width:380px;padding:2.2rem 2rem}
+    .field-label{font-size:12px;font-weight:600;color:#6e6e73;letter-spacing:.5px;text-transform:uppercase;margin-bottom:7px;display:block}
+    .field-input{width:100%;background:rgba(255,255,255,0.8);border:1px solid rgba(0,0,0,0.12);border-radius:12px;padding:13px 16px;color:#1d1d1f;font-size:15px;outline:none;transition:.2s;font-family:inherit}
+    .field-input:focus{border-color:#007aff;background:#fff;box-shadow:0 0 0 3px rgba(0,122,255,0.12)}
+    .field-input::placeholder{color:#aeaeb2}
+    .field-wrap{margin-bottom:14px}
+    .btn-primary{width:100%;padding:14px;background:#007aff;border:none;border-radius:12px;color:#fff;font-size:15px;font-weight:600;cursor:pointer;transition:.18s;letter-spacing:-.2px;font-family:inherit}
+    .btn-primary:hover{background:#0071e3}
+    .btn-primary:active{transform:scale(.98);background:#0068d0}
+    .err-msg{font-size:13px;color:#ff3b30;text-align:center;margin-top:10px;min-height:18px}
     
-    .topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:#fff;border-bottom:1px solid #e5e5ea;flex-shrink:0}
+    .topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 40px;background:rgba(255,255,255,0.78);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid rgba(0,0,0,0.07);position:sticky;top:0;z-index:100}
+    .topbar-title{font-size:17px;font-weight:700;color:#1d1d1f;letter-spacing:-.3px;cursor:default;user-select:none}
+    .user-pill{display:flex;align-items:center;gap:8px;background:rgba(0,0,0,0.05);border:1px solid rgba(0,0,0,0.07);border-radius:50px;padding:5px 14px 5px 6px}
+    .avatar{width:26px;height:26px;border-radius:50%;background:#007aff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff}
+    .user-name{font-size:13px;color:#1d1d1f;font-weight:500}
+    .btn-logout{background:none;border:none;color:#aeaeb2;cursor:pointer;font-size:12px;margin-left:2px;transition:.15s;padding:2px}
+    .btn-logout:hover{color:#ff3b30}
     
-    /* แก้ไขปัญหาการเลื่อน: ให้ .content เลื่อนได้ */
-    .content{flex:1;overflow-y:auto;padding:20px}
+    /* อัปเดตโครงสร้างหน้าเว็บหลักให้ยืดหยุ่นรองรับ iframe และเต็มหน้าจอมากที่สุด */
+    .content{flex:1; width:100%; max-width:100%; padding:16px 20px; display:flex; flex-direction:column; overflow-y:auto; overflow-x:hidden;}
     
+    .page-heading{font-size:28px;font-weight:700;color:#1d1d1f;letter-spacing:-.5px;margin-bottom:6px}
+    .page-sub{font-size:15px;color:#6e6e73;margin-bottom:24px}
+    
+    /* อัปเดต Grid ให้วางการ์ดได้ยืดหยุ่นตามพื้นที่ */
     .nav-grid{display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:16px;margin-bottom:32px}
-    .nav-card{background:#fff;padding:20px;border-radius:16px;cursor:pointer;border:1px solid #e5e5ea;position:relative}
-    .nav-card:hover{border-color:#007aff}
     
-    /* ปุ่มรวมไฟล์ สีฟ้า */
-    .card-blue{background:#007aff!important;color:#fff!important}
-    .card-blue .nav-label{color:#fff!important}
-    .card-blue .nav-desc{color:#e0e0e0!important}
+    .nav-card{padding:2.2rem 2rem;cursor:pointer;transition:.22s;text-align:left;position:relative;overflow:hidden}
+    .nav-card:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,0,0,0.1)}
+    .nav-card:active{transform:scale(.99)}
+    .nav-accent{position:absolute;top:0;left:0;right:0;height:3px;border-radius:18px 18px 0 0}
     
-    .iframe-glass{flex:1;border-radius:12px;overflow:hidden;position:relative;background:#fff;border:1px solid #e5e5ea}
-    .iframe-glass.fullscreen-mode{position:fixed;inset:0;z-index:9999;border-radius:0}
-    .btn-exit-fs{display:none;position:absolute;top:10px;right:10px;background:#1d1d1f;color:#fff;border:none;padding:8px 16px;border-radius:20px;cursor:pointer;z-index:10000}
-    .iframe-glass.fullscreen-mode .btn-exit-fs{display:block}
+    /* สีประจำแต่ละเครื่องมือ */
+    .acc-blue{background:#007aff}
+    .icon-blue{background:#e8f0fe;color:#007aff}
+    .acc-green{background:#34c759}
+    .icon-green{background:#e6f7ea;color:#34c759}
+    .acc-purple{background:#af52de}
+    .icon-purple{background:#f4e6fc;color:#af52de}
+    .acc-orange{background:#ff9500}
+    .icon-orange{background:#fff0d9;color:#ff9500}
+    .acc-red{background:#ff3b30}
+    .icon-red{background:#ffeceb;color:#ff3b30}
     
-    iframe{width:100%;height:100%;border:none}
+    /* ปุ่มรวมไฟล์ สีพิเศษเต็มหน้าจอ */
+    .card-dark{background:#1d1d1f!important;color:#fff;grid-column:1 / -1;padding:1.6rem 2rem;}
+    .card-dark .nav-label{color:#fff;}
+    .card-dark .nav-desc{color:#aeaeb2;}
+    .card-dark .nav-arrow{color:rgba(255,255,255,0.4);}
+    .card-dark:hover .nav-arrow{color:#fff;transform:translateX(3px);}
+    .card-dark .nav-icon-wrap{background:rgba(255,255,255,0.12);color:#fff;margin-bottom:0;}
+    
+    .nav-icon-wrap{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;margin-bottom:16px;font-size:24px}
+    .nav-label{font-size:17px;font-weight:700;color:#1d1d1f;margin-bottom:4px;letter-spacing:-.2px}
+    .nav-desc{font-size:13px;color:#6e6e73}
+    .nav-arrow{position:absolute;right:20px;bottom:20px;font-size:18px;color:#aeaeb2;transition:.2s}
+    .nav-card:not(.card-dark):hover .nav-arrow{color:#007aff;transform:translateX(3px)}
+    
+    .section-card{padding:1.8rem 2rem}
+    .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+    .section-title-row{display:flex;align-items:center;gap:10px}
+    .section-icon{font-size:20px;color:#007aff;cursor:pointer;transition:.15s;padding:4px}
+    .badge{font-size:11px;background:#f0f0f5;color:#6e6e73;padding:3px 9px;border-radius:20px;font-weight:600}
+    .doc-list{display:flex;flex-direction:column;gap:8px}
+    .doc-item{display:flex;align-items:center;gap:12px;padding:12px 16px;background:rgba(255,255,255,0.7);border:1px solid rgba(0,0,0,0.06);border-radius:12px;transition:.18s}
+    .doc-item:hover{background:#fff;border-color:rgba(0,0,0,0.1);box-shadow:0 2px 12px rgba(0,0,0,0.06)}
+    .doc-icon{font-size:17px;color:#007aff;flex-shrink:0}
+    .doc-name{flex:1;font-size:14px;color:#1d1d1f;font-weight:500}
+    .doc-link{font-size:12px;color:#007aff;text-decoration:none;display:flex;align-items:center;gap:3px;font-weight:500;padding:5px 10px;background:#e8f0fe;border-radius:8px;transition:.15s}
+    .doc-link:hover{background:#d1e3fd}
+    .doc-admin-btn{display:flex;gap:4px;margin-left:4px}
+    .doc-admin-btn button{background:none;border:none;cursor:pointer;padding:5px;border-radius:7px;transition:.15s;font-size:15px;color:#aeaeb2}
+    .btn-del:hover{background:#fff0ee;color:#ff3b30}
+    .btn-up:hover,.btn-dn:hover{background:#f0f0f5;color:#1d1d1f}
+    .add-form{margin-top:16px;padding-top:16px;border-top:1px solid rgba(0,0,0,0.07);display:flex;flex-direction:column;gap:8px}
+    .add-form input{background:rgba(255,255,255,0.85);border:1px solid rgba(0,0,0,0.1);border-radius:10px;padding:10px 13px;color:#1d1d1f;font-size:14px;outline:none;font-family:inherit;transition:.18s}
+    .add-form input:focus{border-color:#007aff;box-shadow:0 0 0 3px rgba(0,122,255,0.1)}
+    .add-form input::placeholder{color:#aeaeb2}
+    .btn-add{padding:10px 16px;background:#007aff;border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:600;cursor:pointer;transition:.18s;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px}
+    .btn-add:hover{background:#0071e3}
+    .empty-doc{text-align:center;padding:2.5rem;color:#aeaeb2;font-size:14px}
+    .empty-doc i{font-size:32px;display:block;margin-bottom:8px;opacity:.5}
+    
+    .tabs{display:flex;gap:4px;background:rgba(0,0,0,0.05);border-radius:12px;padding:4px;margin-bottom:16px; max-width:800px; flex-shrink:0;}
+    .tab-btn{flex:1;padding:8px 16px;border-radius:9px;border:none;background:none;color:#6e6e73;font-size:14px;font-weight:500;cursor:pointer;transition:.18s;font-family:inherit}
+    .tab-btn.active{background:#fff;color:#007aff;font-weight:600;box-shadow:0 1px 6px rgba(0,0,0,0.08)}
+    
+    .log-wrap{overflow-x:auto}
+    .log-table{width:100%;border-collapse:collapse;font-size:13px}
+    .log-table th{text-align:left;color:#aeaeb2;font-weight:600;padding:8px 12px;border-bottom:1px solid rgba(0,0,0,0.06);font-size:11px;text-transform:uppercase;letter-spacing:.5px}
+    .log-table td{padding:10px 12px;color:#1d1d1f;border-bottom:1px solid rgba(0,0,0,0.04)}
+    .log-table tr:last-child td{border-bottom:none}
+    .log-table tr:hover td{background:rgba(0,0,0,0.02)}
+    
+    .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;z-index:1000;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+    .modal-box{background:#fff;border-radius:20px;padding:2rem;width:min(440px,90vw);box-shadow:0 20px 60px rgba(0,0,0,0.15)}
+    .modal-title{font-size:18px;font-weight:700;color:#1d1d1f;margin-bottom:1.4rem;display:flex;align-items:center;gap:9px;letter-spacing:-.3px}
+    .modal-title i{color:#007aff;font-size:20px}
+    .modal-row{margin-bottom:12px}
+    .modal-row label{font-size:11px;font-weight:600;color:#aeaeb2;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px}
+    .modal-row input{width:100%;background:#f5f5f7;border:1px solid rgba(0,0,0,0.08);border-radius:10px;padding:11px 13px;color:#1d1d1f;font-size:14px;outline:none;font-family:inherit;transition:.18s}
+    .modal-row input:focus{border-color:#007aff;background:#fff;box-shadow:0 0 0 3px rgba(0,122,255,0.1)}
+    .modal-btns{display:flex;gap:8px;margin-top:1.4rem}
+    .btn-confirm{flex:1;padding:12px;background:#007aff;border:none;border-radius:11px;color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:.18s}
+    .btn-confirm:hover{background:#0071e3}
+    .btn-cancel{flex:1;padding:12px;background:#f5f5f7;border:1px solid rgba(0,0,0,0.08);border-radius:11px;color:#6e6e73;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;transition:.18s}
+    .btn-cancel:hover{background:#ebebf0}
+    .user-row{display:flex;align-items:center;justify-content:space-between;background:#f5f5f7;border-radius:10px;padding:9px 12px;margin-bottom:6px}
+    .role-pill{font-size:10px;font-weight:700;background:#e8f0fe;color:#007aff;padding:2px 8px;border-radius:20px;letter-spacing:.3px}
+    
+    .toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(80px);background:#1d1d1f;border-radius:14px;padding:12px 22px;color:#fff;font-size:14px;font-weight:500;display:flex;align-items:center;gap:8px;z-index:2000;opacity:0;transition:.3s;pointer-events:none;white-space:nowrap;box-shadow:0 8px 30px rgba(0,0,0,0.2)}
+    .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+    .toast i{color:#34c759;font-size:16px}
+    .divider{height:1px;background:rgba(0,0,0,0.07);margin:12px 0 16px}
+    
+    /* สไตล์สำหรับแท็บ Viewer Iframe และหน้า Tasks ให้สูงเต็มพื้นที่ */
+    #tab-viewer, #tab-tasks { flex:1; display:flex; flex-direction:column; height:100%; animation: fadeIn 0.3s; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* คลาสใหม่สำหรับขยายเต็มจอโดยไม่หลุดระบบ */
+    .iframe-glass {
+        flex: 1;
+        border-radius: 12px;
+        overflow: hidden;
+        display: flex;
+        position: relative;
+        border: 1px solid rgba(0,0,0,0.08);
+    }
+    .iframe-glass.fullscreen-mode {
+        position: fixed !important;
+        inset: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        z-index: 99999 !important;
+        border-radius: 0 !important;
+        border: none !important;
+    }
+    .btn-exit-fs {
+        display: none;
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        background: #1d1d1f;
+        color: #fff;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 30px;
+        cursor: pointer;
+        z-index: 100;
+        font-size: 14px;
+        font-weight: 600;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        transition: transform 0.2s;
+    }
+    .btn-exit-fs:hover { transform: scale(1.05); }
+    .iframe-glass.fullscreen-mode .btn-exit-fs {
+        display: flex;
+    }
   </style>
 </head>
 <body>
 <div class="page">
-  <div class="wrap" id="main-screen">
-    <div class="topbar">
-      <strong>P-PAC Workspace</strong>
-      <button onclick="logout()" style="border:none;background:none;cursor:pointer">ออกจากระบบ</button>
-    </div>
-    
-    <div class="content" id="main-content">
-      <!-- หน้า Dashboard -->
-      <div id="tab-home">
-        <h2>ระบบรายงาน</h2>
-        <div class="nav-grid">
-           <!-- ปุ่มรวมไฟล์สีฟ้า -->
-           <div class="nav-card card-blue" onclick="openTool('รวมไฟล์', 'https://marketingppac-create.github.io/ppacpasathai/merger.html')">
-              <div class="nav-label">รวมไฟล์ (PDF Merger)</div>
-              <div class="nav-desc">จัดชุดรายงาน</div>
-           </div>
+  <div class="blur-bg">
+    <span class="blob1"></span>
+    <span class="blob2"></span>
+    <span class="blob3"></span>
+  </div>
+  <div class="wrap">
+
+    <!-- LOGIN -->
+    <div id="login-screen">
+      <div class="hero-title">P-PAC Workspace</div>
+      <div class="hero-sub">เข้าสู่ระบบเพื่อเริ่มใช้งาน</div>
+      <div class="glass login-card">
+        <div class="field-wrap">
+          <label class="field-label">ชื่อผู้ใช้</label>
+          <input class="field-input" id="inp-user" placeholder="username" autocomplete="off">
         </div>
-      </div>
-      
-      <!-- ตัวอย่าง Iframe จัดการงาน -->
-      <div id="tab-tasks" class="hidden" style="height:100%">
-        <div class="iframe-glass" id="tasks-fs">
-          <button class="btn-exit-fs" onclick="toggleFS('tasks-fs')">ย่อหน้าจอ</button>
-          <iframe src="https://script.google.com/macros/s/AKfycbxcE64x4vMA_Xmi2w5AYUAsoLM-oxBt_XTKfYSxQZZmeHDvG-nQN9-BG2ze0NF7AgJMcA/exec" sandbox="allow-forms allow-scripts allow-same-origin allow-popups"></iframe>
+        <div class="field-wrap">
+          <label class="field-label">รหัสผ่าน</label>
+          <input class="field-input" id="inp-pass" type="password" placeholder="password">
         </div>
+        <button class="btn-primary" id="btn-login">เข้าสู่ระบบ</button>
+        <div class="err-msg" id="login-err"></div>
       </div>
     </div>
+
+    <!-- MAIN -->
+    <div id="main-screen" class="hidden" style="flex:1;display:flex;flex-direction:column">
+      <div class="topbar">
+        <div class="topbar-title" id="workspace-title">P-PAC Workspace</div>
+        <div class="user-pill">
+          <div class="avatar" id="user-avatar">U</div>
+          <span class="user-name" id="user-display">-</span>
+          <button class="btn-logout" id="btn-logout" title="ออกจากระบบ">
+            <i class="ti ti-logout" style="font-size:14px"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="tabs">
+          <button class="tab-btn" onclick="switchTab('tasks',this)">
+            <i class="ti ti-layout-kanban" style="font-size:14px;margin-right:5px;vertical-align:-2px"></i>1. จัดการงาน (Tasks)
+          </button>
+          <button class="tab-btn active" onclick="switchTab('home',this)">
+            <i class="ti ti-file-text" style="font-size:14px;margin-right:5px;vertical-align:-2px"></i>2. ออกรายงานไทย
+          </button>
+          <button class="tab-btn" onclick="switchTab('docs',this)">
+            <i class="ti ti-files" style="font-size:14px;margin-right:5px;vertical-align:-2px"></i>3. เอกสารองค์กร
+          </button>
+          <button class="tab-btn" id="tab-log-btn" onclick="switchTab('log',this)" style="display:none">
+            <i class="ti ti-list" style="font-size:14px;margin-right:5px;vertical-align:-2px"></i>ประวัติเข้าใช้
+          </button>
+        </div>
+
+        <!-- TAB: TASKS (จัดการงาน) -->
+        <div id="tab-tasks" class="hidden">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding:0 4px;flex-shrink:0;">
+            <div>
+              <div style="font-weight:700;font-size:18px;color:#1d1d1f;letter-spacing:-0.2px">ระบบจัดการงาน (Tasks)</div>
+              <div style="font-size:13px;color:#6e6e73;margin-top:2px">จัดการโปรเจกต์และติดตามความคืบหน้า</div>
+            </div>
+            <button onclick="toggleFS('tasks-fs')" style="background:#e8f0fe;border:none;color:#007aff;font-size:13px;font-weight:600;padding:8px 16px;border-radius:20px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:.2s;font-family:inherit" title="ขยายพื้นที่ทำงานเต็มจอ">
+              ขยายเต็มจอ <i class="ti ti-maximize" style="font-size:15px"></i>
+            </button>
+          </div>
+          <div id="tasks-fs" class="glass iframe-glass">
+            <button class="btn-exit-fs" onclick="toggleFS('tasks-fs')"><i class="ti ti-minimize"></i> ย่อกลับหน้าปกติ</button>
+            <iframe src="https://script.google.com/macros/s/AKfycbxcE64x4vMA_Xmi2w5AYUAsoLM-oxBt_XTKfYSxQZZmeHDvG-nQN9-BG2ze0NF7AgJMcA/exec" style="width:100%;height:100%;border:none;background:#f5f5f7;" allowfullscreen></iframe>
+          </div>
+        </div>
+
+        <!-- TAB: HOME (DASHBOARD) -->
+        <div id="tab-home">
+          <div class="page-heading">สวัสดี, <span id="greet-name">-</span></div>
+          <div class="page-sub">เลือกฟังก์ชันที่ต้องการใช้งานจากระบบออกรายงานด้านล่าง</div>
+          
+          <!-- หมวดที่ 1: รายงานและศักยภาพ -->
+          <div style="font-size:17px;font-weight:700;color:#1d1d1f;margin-bottom:12px;display:flex;align-items:center;gap:6px">
+            <i class="ti ti-apps" style="color:#007aff"></i> ระบบประเมินและศักยภาพ
+          </div>
+          <div class="nav-grid">
+            <div class="glass nav-card" onclick="openTool('1. ลักษณะบุคลิกภาพ (นก)', 'https://marketingppac-create.github.io/ppacpasathai/bird.html')">
+              <div class="nav-accent acc-blue"></div>
+              <div class="nav-icon-wrap icon-blue"><i class="ti ti-feather"></i></div>
+              <div class="nav-label">1. ลักษณะบุคลิกภาพ</div>
+              <div class="nav-desc">วิเคราะห์บุคลิกภาพ 4 แบบ (นก)</div>
+              <i class="ti ti-arrow-right nav-arrow"></i>
+            </div>
+            
+            <div class="glass nav-card" onclick="openTool('2. ตารางศักยภาพ', 'https://marketingppac-create.github.io/ppacpasathai/10.html')">
+              <div class="nav-accent acc-green"></div>
+              <div class="nav-icon-wrap icon-green"><i class="ti ti-table"></i></div>
+              <div class="nav-label">2. ตารางศักยภาพ</div>
+              <div class="nav-desc">ตารางประเมินผลศักยภาพ 10 ด้าน</div>
+              <i class="ti ti-arrow-right nav-arrow"></i>
+            </div>
+            
+            <div class="glass nav-card" onclick="openTool('3. การทำงานของสมอง', 'https://marketingppac-create.github.io/ppacpasathai/brain.html')">
+              <div class="nav-accent acc-purple"></div>
+              <div class="nav-icon-wrap icon-purple"><i class="ti ti-brain"></i></div>
+              <div class="nav-label">3. การทำงานของสมอง</div>
+              <div class="nav-desc">Learning Style & Type</div>
+              <i class="ti ti-arrow-right nav-arrow"></i>
+            </div>
+            
+            <div class="glass nav-card" onclick="openTool('4. สรุปศักยภาพ', 'https://marketingppac-create.github.io/ppacpasathai/career.html')">
+              <div class="nav-accent acc-orange"></div>
+              <div class="nav-icon-wrap icon-orange"><i class="ti ti-chart-pie"></i></div>
+              <div class="nav-label">4. สรุปศักยภาพ</div>
+              <div class="nav-desc">ระบบสรุปศักยภาพและ Career</div>
+              <i class="ti ti-arrow-right nav-arrow"></i>
+            </div>
+          </div>
+
+          <!-- หมวดที่ 2: งาน Corporate -->
+          <div style="font-size:17px;font-weight:700;color:#1d1d1f;margin-bottom:12px;display:flex;align-items:center;gap:6px">
+            <i class="ti ti-briefcase" style="color:#ff3b30"></i> งาน Corporate (องค์กร)
+          </div>
+          <div class="nav-grid">
+            <div class="glass nav-card" onclick="openTool('5. SWOT และหลักสูตรฝึกอบรม', 'https://marketingppac-create.github.io/ppacpasathai/SWOT.html')">
+              <div class="nav-accent acc-red"></div>
+              <div class="nav-icon-wrap icon-red"><i class="ti ti-shield-check"></i></div>
+              <div class="nav-label">5. SWOT & ฝึกอบรม</div>
+              <div class="nav-desc">จุดแข็ง จุดอ่อน & หลักสูตรการพัฒนา</div>
+              <i class="ti ti-arrow-right nav-arrow"></i>
+            </div>
+            
+            <div class="glass nav-card" onclick="openTool('6. ปก Corporate', 'https://marketingppac-create.github.io/ppacpasathai/covercopt.html')">
+              <div class="nav-accent acc-red"></div>
+              <div class="nav-icon-wrap icon-red"><i class="ti ti-file-certificate"></i></div>
+              <div class="nav-label">6. ปก Corporate</div>
+              <div class="nav-desc">ระบบสร้างปกรายงานสำหรับองค์กร</div>
+              <i class="ti ti-arrow-right nav-arrow"></i>
+            </div>
+          </div>
+
+          <!-- หมวดที่ 3: จัดการไฟล์ & งานอื่นๆ -->
+          <div style="font-size:17px;font-weight:700;color:#1d1d1f;margin-bottom:12px;display:flex;align-items:center;gap:6px">
+            <i class="ti ti-tools" style="color:#6e6e73"></i> เครื่องมือจัดการและระบบ
+          </div>
+          <div class="nav-grid">
+            <!-- ปุ่มรวมไฟล์ สีดำ โดดเด่น -->
+            <div class="glass nav-card card-dark" onclick="openTool('7. รวมไฟล์', 'https://marketingppac-create.github.io/ppacpasathai/merger.html')">
+              <div class="nav-accent" style="background:rgba(255,255,255,0.2)"></div>
+              <div style="display:flex;align-items:center;gap:16px">
+                <div class="nav-icon-wrap"><i class="ti ti-file-zip"></i></div>
+                <div style="flex:1">
+                  <div class="nav-label">7. รวมไฟล์ (PDF Merger)</div>
+                  <div class="nav-desc">เครื่องมือจัดชุดรวมไฟล์รายงานและปกเข้าด้วยกัน</div>
+                </div>
+                <i class="ti ti-arrow-right nav-arrow"></i>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- TAB: DOCS -->
+        <div id="tab-docs" class="hidden">
+          <div class="page-heading">เอกสารองค์กร</div>
+          <div class="page-sub">เอกสารและลิงก์สำหรับสื่อสารภายในองค์กร</div>
+          <div class="glass section-card">
+            <div class="section-header">
+              <div class="section-title-row">
+                <i class="ti ti-folder section-icon" id="doc-mgr-icon"></i>
+                <span class="section-title">รายการเอกสาร</span>
+                <span class="badge" id="doc-count">0 รายการ</span>
+              </div>
+            </div>
+            <div class="doc-list" id="doc-list"></div>
+            <div id="add-doc-panel" class="hidden">
+              <div class="add-form">
+                <input id="new-doc-name" placeholder="ชื่อเอกสาร...">
+                <input id="new-doc-url" placeholder="https://...">
+                <button class="btn-add" onclick="addDoc()">
+                  <i class="ti ti-plus" style="font-size:15px"></i>เพิ่มเอกสาร
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: LOG -->
+        <div id="tab-log" class="hidden">
+          <div class="page-heading">ประวัติเข้าใช้งาน</div>
+          <div class="page-sub">บันทึกการเข้าสู่ระบบและการใช้งานของผู้ใช้ทั้งหมด</div>
+          <div class="glass section-card">
+            <div class="log-wrap">
+              <table class="log-table">
+                <thead>
+                  <tr><th>#</th><th>ผู้ใช้</th><th>วันที่ / เวลา</th><th>หมายเหตุ</th></tr>
+                </thead>
+                <tbody id="log-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        
+        <!-- TAB: VIEWER (IFRAME สำหรับเปิดระบบรายงานภายในเว็บ) -->
+        <div id="tab-viewer" class="hidden">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding:0 4px;flex-shrink:0;">
+            <button onclick="closeViewer()" style="background:none;border:none;color:#007aff;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:4px;font-family:inherit;transition:.2s" onmouseover="this.style.opacity=0.7" onmouseout="this.style.opacity=1">
+              <i class="ti ti-chevron-left" style="font-size:18px"></i> กลับหน้าหลัก
+            </button>
+            <div id="viewer-title" style="font-weight:700;font-size:16px;color:#1d1d1f;letter-spacing:-0.2px">เครื่องมือ</div>
+            <button onclick="toggleFS('viewer-fs')" style="background:#e8f0fe;border:none;color:#007aff;font-size:13px;font-weight:600;padding:6px 14px;border-radius:20px;cursor:pointer;display:flex;align-items:center;gap:4px;transition:.2s;font-family:inherit" title="ขยายพื้นที่ทำงานเต็มจอ">
+              ขยายเต็มจอ <i class="ti ti-maximize" style="font-size:15px"></i>
+            </button>
+          </div>
+          <div id="viewer-fs" class="glass iframe-glass">
+            <button class="btn-exit-fs" onclick="toggleFS('viewer-fs')"><i class="ti ti-minimize"></i> ย่อกลับหน้าปกติ</button>
+            <iframe id="tool-frame" style="width:100%;height:100%;border:none;background:#f5f5f7;" allowfullscreen allow="downloads"></iframe>
+          </div>
+        </div>
+        
+      </div>
+    </div>
+
+    <!-- MODAL: USER MANAGEMENT -->
+    <div id="modal-adduser" class="modal-bg hidden">
+      <div class="modal-box">
+        <div class="modal-title"><i class="ti ti-user-plus"></i>จัดการผู้ใช้งาน</div>
+        <div style="font-size:12px;font-weight:600;color:#aeaeb2;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">รายชื่อปัจจุบัน</div>
+        <div id="user-list-admin" style="max-height:160px;overflow-y:auto;margin-bottom:16px"></div>
+        <div class="divider"></div>
+        <div style="font-size:12px;font-weight:600;color:#aeaeb2;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">เพิ่มผู้ใช้ใหม่</div>
+        <div class="modal-row"><label>Username</label><input id="new-uname" placeholder="username"></div>
+        <div class="modal-row"><label>Password</label><input id="new-upass" type="password" placeholder="password"></div>
+        <div class="modal-btns">
+          <button class="btn-confirm" onclick="createUser()">
+            <i class="ti ti-plus" style="font-size:14px;margin-right:4px;vertical-align:-2px"></i>สร้าง
+          </button>
+          <button class="btn-cancel" onclick="closeModal('modal-adduser')">ปิด</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOAST -->
+    <div id="toast" class="toast">
+      <i class="ti ti-circle-check"></i>
+      <span id="toast-msg"></span>
+    </div>
+
   </div>
 </div>
 
 <script>
-function logout(){location.reload()}
-function toggleFS(id){document.getElementById(id).classList.toggle('fullscreen-mode')}
-function openTool(name, url){
-    // Logic เปิดเครื่องมือ
-    window.location.href = url; // หรือปรับเป็นการเปิดในหน้า Viewer
+const ADMIN = 'admin';
+const API_URL = "https://script.google.com/macros/s/AKfycbzINcJHMIKDffUng2V6s2JGdHpKWT-BeYu3riRf84ioLtcjBY_VLUv8MCoJxifCYYzk/exec"; 
+
+// ตั้งค่า 3 ชั่วโมง = 10800000 มิลลิวินาที
+const SESSION_TIMEOUT = 3 * 60 * 60 * 1000; 
+let sessionCheckInterval = null;
+let currentToolUrl = ''; // เก็บ url ของเครื่องมือปัจจุบันที่กำลังเปิด
+
+let state = {
+  users: { "admin": { "pass": "ppac2024", "role": "admin" } },
+  docs: [],
+  logs: [],
+  curUser: null, curRole: null
+};
+
+let titleClicks=0, titleTimer=null, docIconClicks=0, docIconTimer=null, isDocAdmin=false;
+
+// สร้างหน้าจอโหลดข้อมูล
+const btnLogin = document.getElementById('btn-login');
+btnLogin.disabled = true;
+btnLogin.textContent = 'กำลังโหลดข้อมูล...';
+
+// ฟังก์ชันเช็คสถานะการล็อกอินแบบทันที (Instant Load)
+function restoreSessionFast() {
+  let session = JSON.parse(localStorage.getItem('ppac_session'));
+  if (session && (Date.now() - session.lastActive <= SESSION_TIMEOUT)) {
+    // ใช้ข้อมูลจากเครื่องเพื่อให้หน้าจอแสดงผลได้ทันทีแบบ 0 วินาที
+    let localUsers = JSON.parse(localStorage.getItem('ppac_users')) || state.users;
+    if (localUsers[session.user]) {
+      state.users = localUsers;
+      state.curUser = session.user;
+      state.curRole = state.users[session.user].role;
+      
+      document.getElementById('login-screen').classList.add('hidden');
+      const ms = document.getElementById('main-screen');
+      ms.classList.remove('hidden'); ms.style.display = 'flex';
+      
+      document.getElementById('user-display').textContent = state.curUser;
+      document.getElementById('user-avatar').textContent = state.curUser[0].toUpperCase();
+      document.getElementById('greet-name').textContent = state.curUser;
+      if (state.curRole === 'admin') document.getElementById('tab-log-btn').style.display = '';
+      
+      state.docs = JSON.parse(localStorage.getItem('ppac_docs')) || [];
+      state.logs = JSON.parse(localStorage.getItem('ppac_logs')) || [];
+      
+      renderDocs(); renderLog();
+      startSessionTimer(); 
+      return true;
+    }
+  }
+  localStorage.removeItem('ppac_session');
+  return false;
 }
+
+// โหลด session ขึ้นมาแสดงผลบนหน้าจอทันที ไม่ต้องรอเน็ต
+restoreSessionFast();
+
+// ฟังก์ชันดึงข้อมูลจาก Google Sheets เพื่ออัปเดตเบื้องหลัง
+async function loadDataFromGoogle() {
+  try {
+    const response = await fetch(API_URL);
+    const data = await response.json();
+    state.users = data.users || state.users;
+    state.docs = data.docs || [];
+    state.logs = data.logs || [];
+    
+    // เปิดให้กดปุ่ม Login ได้ถ้าไม่ได้อยู่ในระบบ
+    btnLogin.disabled = false;
+    btnLogin.textContent = 'เข้าสู่ระบบ';
+    
+    // อัปเดตข้อมูลล่าสุดบนหน้าจอ (ถ้าอยู่ในระบบอยู่แล้ว)
+    if (state.curUser) {
+      renderDocs();
+      renderLog();
+      if (state.curRole === 'admin' && !document.getElementById('modal-adduser').classList.contains('hidden')) {
+          renderUserList();
+      }
+    } else {
+      // เช็คซ้ำ เผื่อว่าข้อมูลใหม่ที่ดึงมามี User นี้แล้ว
+      restoreSessionFast();
+    }
+  } catch (error) {
+    console.error('โหลดข้อมูลล้มเหลว:', error);
+    btnLogin.disabled = false;
+    btnLogin.textContent = 'เข้าสู่ระบบ (ออฟไลน์)';
+  }
+}
+
+// ฟังก์ชันจับความเคลื่อนไหว (เพื่อต่อเวลา Session)
+let lastActivityTime = Date.now();
+function updateActivity() {
+  const now = Date.now();
+  // อัปเดตการเคลื่อนไหวลงระบบแค่ทุกๆ 5 วินาที เพื่อไม่ให้เบราว์เซอร์ทำงานหนักเกินไป
+  if (now - lastActivityTime > 5000) { 
+    lastActivityTime = now;
+    let session = JSON.parse(localStorage.getItem('ppac_session'));
+    if (session) {
+      session.lastActive = now;
+      localStorage.setItem('ppac_session', JSON.stringify(session));
+    }
+  }
+}
+// จับเหตุการณ์เลื่อนเมาส์, พิมพ์, คลิก, เลื่อนจอ
+['mousemove', 'keydown', 'click', 'scroll', 'touchstart'].forEach(evt => window.addEventListener(evt, updateActivity));
+
+// จับเวลาเตะออกหากไม่ใช้งาน
+function startSessionTimer() {
+  if (sessionCheckInterval) clearInterval(sessionCheckInterval);
+  sessionCheckInterval = setInterval(() => {
+    let session = JSON.parse(localStorage.getItem('ppac_session'));
+    if (session && (Date.now() - session.lastActive > SESSION_TIMEOUT)) {
+      logout();
+      showToast('ไม่ได้ใช้งานเกิน 3 ชั่วโมง ระบบทำการล็อกเอาท์อัตโนมัติ');
+    }
+  }, 60000); // ตรวจสอบทุกๆ 1 นาที
+}
+
+// ฟังก์ชันเซฟข้อมูลไปที่ Google Sheets และ LocalStorage
+function save() {
+  localStorage.setItem('ppac_users', JSON.stringify(state.users));
+  localStorage.setItem('ppac_docs',  JSON.stringify(state.docs));
+  localStorage.setItem('ppac_logs',  JSON.stringify(state.logs));
+
+  fetch(API_URL, {
+    method: 'POST',
+    keepalive: true, // ป้องกันการยกเลิก Fetch เวลาเปลี่ยนแท็บด่วน
+    headers: {
+      'Content-Type': 'text/plain;charset=utf-8'
+    },
+    body: JSON.stringify({ users: state.users, docs: state.docs, logs: state.logs })
+  }).catch(err => console.log('เซฟลง Sheet ล้มเหลว:', err));
+}
+
+// เริ่มดึงข้อมูลเบื้องหลัง
+loadDataFromGoogle();
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function login() {
+  const u = document.getElementById('inp-user').value.trim();
+  const p = document.getElementById('inp-pass').value;
+  const err = document.getElementById('login-err');
+  if (!state.users[u] || state.users[u].pass !== p) { err.textContent = 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง'; return; }
+  state.curUser = u; state.curRole = state.users[u].role;
+  state.logs.unshift({ user: u, time: new Date().toLocaleString('th-TH'), note: 'เข้าสู่ระบบ' });
+  if (state.logs.length > 200) state.logs = state.logs.slice(0, 200);
+  
+  // บันทึก Session ตอนล็อกอินสำเร็จ
+  localStorage.setItem('ppac_session', JSON.stringify({
+    user: u,
+    lastActive: Date.now()
+  }));
+  startSessionTimer();
+
+  save();
+  document.getElementById('login-screen').classList.add('hidden');
+  const ms = document.getElementById('main-screen');
+  ms.classList.remove('hidden'); ms.style.display = 'flex';
+  document.getElementById('user-display').textContent = u;
+  document.getElementById('user-avatar').textContent = u[0].toUpperCase();
+  document.getElementById('greet-name').textContent = u;
+  if (state.curRole === 'admin') document.getElementById('tab-log-btn').style.display = '';
+  err.textContent = '';
+  renderDocs(); renderLog();
+}
+
+function logout() {
+  state.curUser = null; state.curRole = null; isDocAdmin = false; titleClicks = 0; docIconClicks = 0;
+  
+  // ลบ Session ทิ้ง
+  localStorage.removeItem('ppac_session');
+  if (sessionCheckInterval) clearInterval(sessionCheckInterval);
+
+  document.getElementById('main-screen').classList.add('hidden');
+  document.getElementById('login-screen').classList.remove('hidden');
+  document.getElementById('inp-user').value = ''; document.getElementById('inp-pass').value = '';
+  document.getElementById('tab-log-btn').style.display = 'none';
+  switchTab('home', document.querySelector('.tab-btn:nth-child(2)'));
+}
+
+document.getElementById('btn-login').onclick = login;
+document.getElementById('btn-logout').onclick = logout;
+document.getElementById('inp-pass').addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
+
+document.getElementById('workspace-title').onclick = function() {
+  titleClicks++;
+  if (titleTimer) clearTimeout(titleTimer);
+  if (titleClicks >= 5) { titleClicks = 0; if (state.curRole === 'admin') openUserModal(); }
+  else titleTimer = setTimeout(() => titleClicks = 0, 2000);
+};
+
+document.getElementById('doc-mgr-icon').onclick = function() {
+  if (state.curRole !== 'admin') return;
+  docIconClicks++;
+  if (docIconTimer) clearTimeout(docIconTimer);
+  if (docIconClicks >= 5) {
+    docIconClicks = 0; isDocAdmin = !isDocAdmin;
+    document.getElementById('add-doc-panel').classList.toggle('hidden', !isDocAdmin);
+    showToast(isDocAdmin ? 'โหมดแก้ไขเอกสาร: เปิด' : 'โหมดแก้ไขเอกสาร: ปิด');
+    renderDocs();
+  } else docIconTimer = setTimeout(() => docIconClicks = 0, 2000);
+};
+
+// สลับเมนูด้านบน และเคลียร์ iframe กลับเป็นค่าว่างเมื่อกดสลับ
+function switchTab(name, btn) {
+  ['home','docs','log','viewer','tasks'].forEach(t => {
+      let el = document.getElementById('tab-'+t);
+      if(el) el.classList.add('hidden');
+  });
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.remove('hidden');
+  if (btn) btn.classList.add('active');
+  if (name === 'docs') renderDocs();
+  if (name === 'log')  renderLog();
+}
+
+// เปิดระบบไว้ด้านในเว็บไซต์เลย (ฝัง Iframe)
+function openTool(name, url) {
+  state.logs.unshift({ user: state.curUser, time: new Date().toLocaleString('th-TH'), note: 'เปิดใช้งาน: ' + name });
+  save();
+  
+  currentToolUrl = url;
+  
+  // ซ่อนทุกหน้า
+  ['home','docs','log','tasks'].forEach(t => document.getElementById('tab-'+t).classList.add('hidden'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  
+  // โชว์หน้าต่างของ Iframe
+  const viewer = document.getElementById('tab-viewer');
+  viewer.classList.remove('hidden');
+  document.getElementById('viewer-title').textContent = name;
+  document.getElementById('tool-frame').src = url;
+}
+
+// เมื่อต้องการปิดการทำงานของ iframe กลับสู่หน้าหลัก
+function closeViewer() {
+  document.getElementById('tool-frame').src = '';
+  document.getElementById('tab-viewer').classList.add('hidden');
+  document.getElementById('viewer-fs').classList.remove('fullscreen-mode'); // กันไว้เผื่อกรณีกดกลับตอนเต็มจอ
+  
+  // ดึงปุ่ม 'ออกรายงานไทย' ขึ้นมา active ใหม่
+  let homeBtn = document.querySelector('button[onclick*="switchTab(\'home\'"]');
+  switchTab('home', homeBtn || document.querySelectorAll('.tab-btn')[1]); 
+}
+
+// ฟังก์ชันขยายเต็มจอ (ซ้อนทับอยู่ในหน้าเดิม ไม่กระเด็นไปลิงก์อื่น)
+function toggleFS(id) {
+  const el = document.getElementById(id);
+  if(el) el.classList.toggle('fullscreen-mode');
+}
+
+function renderDocs() {
+  const list = document.getElementById('doc-list');
+  document.getElementById('doc-count').textContent = state.docs.length + ' รายการ';
+  if (state.docs.length === 0) { list.innerHTML = '<div class="empty-doc"><i class="ti ti-file-off"></i>ยังไม่มีเอกสาร</div>'; return; }
+  list.innerHTML = state.docs.map((d,i) => `
+    <div class="doc-item">
+      <i class="ti ti-file-description doc-icon"></i>
+      <span class="doc-name">${esc(d.name)}</span>
+      <a class="doc-link" href="${esc(d.url)}" target="_blank"><i class="ti ti-external-link" style="font-size:12px"></i>เปิด</a>
+      ${isDocAdmin && state.curRole==='admin' ? `<div class="doc-admin-btn">
+        ${i>0 ? `<button class="btn-up" onclick="moveDoc(${i},-1)"><i class="ti ti-arrow-up"></i></button>` : ''}
+        ${i<state.docs.length-1 ? `<button class="btn-dn" onclick="moveDoc(${i},1)"><i class="ti ti-arrow-down"></i></button>` : ''}
+        <button class="btn-del" onclick="delDoc(${i})"><i class="ti ti-trash"></i></button>
+      </div>` : ''}
+    </div>`).join('');
+}
+
+function addDoc() {
+  const name = document.getElementById('new-doc-name').value.trim();
+  const url  = document.getElementById('new-doc-url').value.trim();
+  if (!name || !url) { showToast('กรุณากรอกชื่อและลิงก์'); return; }
+  state.docs.push({ name, url }); save(); renderDocs();
+  document.getElementById('new-doc-name').value = '';
+  document.getElementById('new-doc-url').value  = '';
+  showToast('เพิ่มเอกสารแล้ว');
+}
+
+function delDoc(i)      { state.docs.splice(i,1); save(); renderDocs(); showToast('ลบเอกสารแล้ว'); }
+function moveDoc(i,dir) {
+  const j = i+dir; if (j<0 || j>=state.docs.length) return;
+  [state.docs[i], state.docs[j]] = [state.docs[j], state.docs[i]]; save(); renderDocs();
+}
+
+function renderLog() {
+  const tb = document.getElementById('log-body');
+  if (state.logs.length === 0) { tb.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#aeaeb2;padding:1.5rem">ยังไม่มีประวัติ</td></tr>'; return; }
+  tb.innerHTML = state.logs.slice(0,100).map((l,i) =>
+    `<tr><td style="color:#aeaeb2;font-weight:500">${i+1}</td><td style="font-weight:500">${esc(l.user)}</td><td style="color:#6e6e73">${esc(l.time)}</td><td style="color:#6e6e73">${esc(l.note||'-')}</td></tr>`
+  ).join('');
+}
+
+function openUserModal()  { renderUserList(); document.getElementById('modal-adduser').classList.remove('hidden'); }
+function closeModal(id)   { document.getElementById(id).classList.add('hidden'); }
+function renderUserList() {
+  document.getElementById('user-list-admin').innerHTML = Object.keys(state.users).map(u => `
+    <div class="user-row">
+      <div style="display:flex;align-items:center;gap:8px">
+        <i class="ti ti-user-circle" style="font-size:16px;color:#007aff"></i>
+        <span style="font-size:13px;font-weight:500;color:#1d1d1f">${esc(u)}</span>
+        ${state.users[u].role==='admin' ? '<span class="role-pill">admin</span>' : ''}
+      </div>
+      ${u !== ADMIN ? `<button onclick="deleteUser('${u}')" style="background:none;border:none;cursor:pointer;color:#ff3b30;font-size:14px;padding:4px"><i class="ti ti-trash"></i></button>` : ''}
+    </div>`).join('');
+}
+
+function createUser() {
+  const u = document.getElementById('new-uname').value.trim();
+  const p = document.getElementById('new-upass').value;
+  if (!u || !p) { showToast('กรุณากรอกข้อมูล'); return; }
+  if (state.users[u]) { showToast('Username นี้มีอยู่แล้ว'); return; }
+  state.users[u] = { pass: p, role: 'user' }; save(); renderUserList();
+  document.getElementById('new-uname').value = '';
+  document.getElementById('new-upass').value = '';
+  showToast('สร้าง User เรียบร้อย');
+}
+
+function deleteUser(u) { delete state.users[u]; save(); renderUserList(); showToast('ลบ User เรียบร้อย'); }
+document.getElementById('modal-adduser').onclick = function(e) { if (e.target === this) closeModal('modal-adduser'); };
 </script>
 </body>
 </html>
