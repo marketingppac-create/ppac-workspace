@@ -260,6 +260,10 @@
 const ADMIN = 'admin';
 const API_URL = "https://script.google.com/macros/s/AKfycbzINcJHMIKDffUng2V6s2JGdHpKWT-BeYu3riRf84ioLtcjBY_VLUv8MCoJxifCYYzk/exec"; 
 
+// ตั้งค่า 3 ชั่วโมง = 10800000 มิลลิวินาที
+const SESSION_TIMEOUT = 3 * 60 * 60 * 1000; 
+let sessionCheckInterval = null;
+
 let state = {
   users: { "admin": { "pass": "ppac2024", "role": "admin" } },
   docs: [],
@@ -286,12 +290,74 @@ async function loadDataFromGoogle() {
     // เปิดให้กดปุ่ม Login ได้
     btnLogin.disabled = false;
     btnLogin.textContent = 'เข้าสู่ระบบ';
+    
+    // หลังจากโหลดข้อมูลเสร็จแล้ว ตรวจสอบว่าเคยเข้าสู่ระบบไว้หรือไม่
+    restoreSession();
   } catch (error) {
     console.error('โหลดข้อมูลล้มเหลว:', error);
     // หากโหลดพลาด ยังเปิดปุ่มให้เข้าด้วยระบบออฟไลน์ (จาก localStorage) ได้
     btnLogin.disabled = false;
     btnLogin.textContent = 'เข้าสู่ระบบ (ออฟไลน์)';
+    restoreSession();
   }
+}
+
+// เช็คสถานะการล็อกอินที่จำไว้
+function restoreSession() {
+  let session = JSON.parse(localStorage.getItem('ppac_session'));
+  
+  if (session && (Date.now() - session.lastActive <= SESSION_TIMEOUT)) {
+    // เช็คว่า user นี้ยังมีอยู่ในระบบหรือไม่ (ป้องกันกรณีแอดมินลบ user ไปแล้ว)
+    if (state.users[session.user]) {
+      state.curUser = session.user;
+      state.curRole = state.users[session.user].role;
+      
+      // ข้ามหน้าล็อกอิน ไปหน้าหลักทันที
+      document.getElementById('login-screen').classList.add('hidden');
+      const ms = document.getElementById('main-screen');
+      ms.classList.remove('hidden'); ms.style.display = 'flex';
+      
+      document.getElementById('user-display').textContent = state.curUser;
+      document.getElementById('user-avatar').textContent = state.curUser[0].toUpperCase();
+      document.getElementById('greet-name').textContent = state.curUser;
+      if (state.curRole === 'admin') document.getElementById('tab-log-btn').style.display = '';
+      
+      renderDocs(); renderLog();
+      startSessionTimer(); // เริ่มจับเวลา 3 ชั่วโมง
+      return;
+    }
+  }
+  // ถ้าหมดเวลา 3 ชม. หรือ User ไม่มีแล้ว ให้ล้างค่าทิ้ง (ให้ล็อกอินใหม่)
+  localStorage.removeItem('ppac_session');
+}
+
+// ฟังก์ชันจับความเคลื่อนไหว (เพื่อต่อเวลา Session)
+let lastActivityTime = Date.now();
+function updateActivity() {
+  const now = Date.now();
+  // อัปเดตการเคลื่อนไหวลงระบบแค่ทุกๆ 5 วินาที เพื่อไม่ให้เบราว์เซอร์ทำงานหนักเกินไป
+  if (now - lastActivityTime > 5000) { 
+    lastActivityTime = now;
+    let session = JSON.parse(localStorage.getItem('ppac_session'));
+    if (session) {
+      session.lastActive = now;
+      localStorage.setItem('ppac_session', JSON.stringify(session));
+    }
+  }
+}
+// จับเหตุการณ์เลื่อนเมาส์, พิมพ์, คลิก, เลื่อนจอ
+['mousemove', 'keydown', 'click', 'scroll', 'touchstart'].forEach(evt => window.addEventListener(evt, updateActivity));
+
+// จับเวลาเตะออกหากไม่ใช้งาน
+function startSessionTimer() {
+  if (sessionCheckInterval) clearInterval(sessionCheckInterval);
+  sessionCheckInterval = setInterval(() => {
+    let session = JSON.parse(localStorage.getItem('ppac_session'));
+    if (session && (Date.now() - session.lastActive > SESSION_TIMEOUT)) {
+      logout();
+      showToast('ไม่ได้ใช้งานเกิน 3 ชั่วโมง ระบบทำการล็อกเอาท์อัตโนมัติ');
+    }
+  }, 60000); // ตรวจสอบทุกๆ 1 นาที
 }
 
 // ฟังก์ชันเซฟข้อมูลไปที่ Google Sheets และ LocalStorage
@@ -331,6 +397,14 @@ function login() {
   state.curUser = u; state.curRole = state.users[u].role;
   state.logs.unshift({ user: u, time: new Date().toLocaleString('th-TH'), note: 'เข้าสู่ระบบ' });
   if (state.logs.length > 200) state.logs = state.logs.slice(0, 200);
+  
+  // บันทึก Session ตอนล็อกอินสำเร็จ
+  localStorage.setItem('ppac_session', JSON.stringify({
+    user: u,
+    lastActive: Date.now()
+  }));
+  startSessionTimer();
+
   save();
   document.getElementById('login-screen').classList.add('hidden');
   const ms = document.getElementById('main-screen');
@@ -345,6 +419,11 @@ function login() {
 
 function logout() {
   state.curUser = null; state.curRole = null; isDocAdmin = false; titleClicks = 0; docIconClicks = 0;
+  
+  // ลบ Session ทิ้ง
+  localStorage.removeItem('ppac_session');
+  if (sessionCheckInterval) clearInterval(sessionCheckInterval);
+
   document.getElementById('main-screen').classList.add('hidden');
   document.getElementById('login-screen').classList.remove('hidden');
   document.getElementById('inp-user').value = ''; document.getElementById('inp-pass').value = '';
