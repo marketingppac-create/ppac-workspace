@@ -258,11 +258,10 @@
 
 <script>
 const ADMIN = 'admin';
-// นำ URL ที่ได้จากขั้นตอนที่ 3 มาวางในเครื่องหมายคำพูดด้านล่างนี้
 const API_URL = "https://script.google.com/macros/s/AKfycbzINcJHMIKDffUng2V6s2JGdHpKWT-BeYu3riRf84ioLtcjBY_VLUv8MCoJxifCYYzk/exec"; 
 
 let state = {
-  users: { "admin": { "pass": "ppac2024", "role": "admin" } }, // ค่าเริ่มต้นระหว่างรอโหลด
+  users: { "admin": { "pass": "ppac2024", "role": "admin" } },
   docs: [],
   logs: [],
   curUser: null, curRole: null
@@ -289,21 +288,21 @@ async function loadDataFromGoogle() {
     btnLogin.textContent = 'เข้าสู่ระบบ';
   } catch (error) {
     console.error('โหลดข้อมูลล้มเหลว:', error);
-    btnLogin.textContent = 'โหลดข้อมูลล้มเหลว (ลองรีเฟรช)';
+    // หากโหลดพลาด ยังเปิดปุ่มให้เข้าด้วยระบบออฟไลน์ (จาก localStorage) ได้
+    btnLogin.disabled = false;
+    btnLogin.textContent = 'เข้าสู่ระบบ (ออฟไลน์)';
   }
 }
 
-// ฟังก์ชันเซฟข้อมูลไปที่ Google Sheets
+// ฟังก์ชันเซฟข้อมูลไปที่ Google Sheets และ LocalStorage
 function save() {
-  // บันทึกลง localStorage สำรองไว้ด้วย (เผื่อเน็ตหลุด)
   localStorage.setItem('ppac_users', JSON.stringify(state.users));
   localStorage.setItem('ppac_docs',  JSON.stringify(state.docs));
   localStorage.setItem('ppac_logs',  JSON.stringify(state.logs));
 
-  // ส่งข้อมูลไปบันทึกที่ Google Sheets (ทำแบบ Background)
   fetch(API_URL, {
     method: 'POST',
-    mode: 'no-cors', // ใช้ no-cors ป้องกันปัญหาเรื่อง Cross-Origin
+    mode: 'no-cors',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ users: state.users, docs: state.docs, logs: state.logs })
   }).catch(err => console.log('เซฟลง Sheet ล้มเหลว:', err));
@@ -312,25 +311,13 @@ function save() {
 // เริ่มโหลดข้อมูลทันทีที่เปิดเว็บ
 loadDataFromGoogle();
 
-// โค้ดส่วนที่เหลือของคุณเหมือนเดิม...
-function showToast(msg) {
-  docs:  JSON.parse(localStorage.getItem('ppac_docs')  || '[]'),
-  logs:  JSON.parse(localStorage.getItem('ppac_logs')  || '[]'),
-  curUser: null, curRole: null
-};
-let titleClicks=0, titleTimer=null, docIconClicks=0, docIconTimer=null, isDocAdmin=false;
-
-function save() {
-  localStorage.setItem('ppac_users', JSON.stringify(state.users));
-  localStorage.setItem('ppac_docs',  JSON.stringify(state.docs));
-  localStorage.setItem('ppac_logs',  JSON.stringify(state.logs));
-}
 function showToast(msg) {
   const t = document.getElementById('toast');
   document.getElementById('toast-msg').textContent = msg;
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2500);
 }
+
 function esc(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
@@ -354,6 +341,7 @@ function login() {
   err.textContent = '';
   renderDocs(); renderLog();
 }
+
 function logout() {
   state.curUser = null; state.curRole = null; isDocAdmin = false; titleClicks = 0; docIconClicks = 0;
   document.getElementById('main-screen').classList.add('hidden');
@@ -362,6 +350,7 @@ function logout() {
   document.getElementById('tab-log-btn').style.display = 'none';
   switchTab('home', document.querySelector('.tab-btn'));
 }
+
 document.getElementById('btn-login').onclick = login;
 document.getElementById('btn-logout').onclick = logout;
 document.getElementById('inp-pass').addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
@@ -372,6 +361,7 @@ document.getElementById('workspace-title').onclick = function() {
   if (titleClicks >= 5) { titleClicks = 0; if (state.curRole === 'admin') openUserModal(); }
   else titleTimer = setTimeout(() => titleClicks = 0, 2000);
 };
+
 document.getElementById('doc-mgr-icon').onclick = function() {
   if (state.curRole !== 'admin') return;
   docIconClicks++;
@@ -392,10 +382,12 @@ function switchTab(name, btn) {
   if (name === 'docs') renderDocs();
   if (name === 'log')  renderLog();
 }
+
 function goCreate() {
   state.logs.unshift({ user: state.curUser, time: new Date().toLocaleString('th-TH'), note: 'คลิก: สร้างรายงานภาษาไทย' });
   save(); window.open('https://marketingppac-create.github.io/ppacpasathai/genarate.html', '_blank');
 }
+
 function goManage() {
   state.logs.unshift({ user: state.curUser, time: new Date().toLocaleString('th-TH'), note: 'คลิก: จัดการงาน' });
   save(); window.open('https://script.google.com/macros/s/AKfycbxcE64x4vMA_Xmi2w5AYUAsoLM-oxBt_XTKfYSxQZZmeHDvG-nQN9-BG2ze0NF7AgJMcA/exec', '_blank');
@@ -417,6 +409,7 @@ function renderDocs() {
       </div>` : ''}
     </div>`).join('');
 }
+
 function addDoc() {
   const name = document.getElementById('new-doc-name').value.trim();
   const url  = document.getElementById('new-doc-url').value.trim();
@@ -426,6 +419,7 @@ function addDoc() {
   document.getElementById('new-doc-url').value  = '';
   showToast('เพิ่มเอกสารแล้ว');
 }
+
 function delDoc(i)      { state.docs.splice(i,1); save(); renderDocs(); showToast('ลบเอกสารแล้ว'); }
 function moveDoc(i,dir) {
   const j = i+dir; if (j<0 || j>=state.docs.length) return;
@@ -453,6 +447,7 @@ function renderUserList() {
       ${u !== ADMIN ? `<button onclick="deleteUser('${u}')" style="background:none;border:none;cursor:pointer;color:#ff3b30;font-size:14px;padding:4px"><i class="ti ti-trash"></i></button>` : ''}
     </div>`).join('');
 }
+
 function createUser() {
   const u = document.getElementById('new-uname').value.trim();
   const p = document.getElementById('new-upass').value;
@@ -463,6 +458,7 @@ function createUser() {
   document.getElementById('new-upass').value = '';
   showToast('สร้าง User เรียบร้อย');
 }
+
 function deleteUser(u) { delete state.users[u]; save(); renderUserList(); showToast('ลบ User เรียบร้อย'); }
 document.getElementById('modal-adduser').onclick = function(e) { if (e.target === this) closeModal('modal-adduser'); };
 </script>
