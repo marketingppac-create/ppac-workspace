@@ -38,23 +38,47 @@
     .user-name{font-size:13px;color:#1d1d1f;font-weight:500}
     .btn-logout{background:none;border:none;color:#aeaeb2;cursor:pointer;font-size:12px;margin-left:2px;transition:.15s;padding:2px}
     .btn-logout:hover{color:#ff3b30}
-    .content{flex:1;max-width:1100px;margin:0 auto;width:100%;padding:40px 40px 60px}
+    
+    /* อัปเดตโครงสร้างหน้าเว็บหลักให้ยืดหยุ่นรองรับ iframe */
+    .content{flex:1;max-width:1100px;margin:0 auto;width:100%;padding:40px 40px 60px;display:flex;flex-direction:column;}
+    
     .page-heading{font-size:28px;font-weight:700;color:#1d1d1f;letter-spacing:-.5px;margin-bottom:6px}
     .page-sub{font-size:15px;color:#6e6e73;margin-bottom:32px}
-    .nav-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:32px}
+    
+    /* อัปเดต Grid ให้วางการ์ดได้ยืดหยุ่นตามพื้นที่ */
+    .nav-grid{display:grid;grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));gap:16px;margin-bottom:36px}
+    
     .nav-card{padding:2.2rem 2rem;cursor:pointer;transition:.22s;text-align:left;position:relative;overflow:hidden}
     .nav-card:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,0,0,0.1)}
     .nav-card:active{transform:scale(.99)}
     .nav-accent{position:absolute;top:0;left:0;right:0;height:3px;border-radius:18px 18px 0 0}
+    
+    /* สีประจำแต่ละเครื่องมือ */
     .acc-blue{background:#007aff}
-    .acc-green{background:#34c759}
-    .nav-icon-wrap{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;margin-bottom:16px;font-size:24px}
     .icon-blue{background:#e8f0fe;color:#007aff}
+    .acc-green{background:#34c759}
     .icon-green{background:#e6f7ea;color:#34c759}
+    .acc-purple{background:#af52de}
+    .icon-purple{background:#f4e6fc;color:#af52de}
+    .acc-orange{background:#ff9500}
+    .icon-orange{background:#fff0d9;color:#ff9500}
+    .acc-red{background:#ff3b30}
+    .icon-red{background:#ffeceb;color:#ff3b30}
+    
+    /* ปุ่มรวมไฟล์ สีพิเศษเต็มหน้าจอ */
+    .card-dark{background:#1d1d1f!important;color:#fff;grid-column:1 / -1;padding:1.6rem 2rem;}
+    .card-dark .nav-label{color:#fff;}
+    .card-dark .nav-desc{color:#aeaeb2;}
+    .card-dark .nav-arrow{color:rgba(255,255,255,0.4);}
+    .card-dark:hover .nav-arrow{color:#fff;transform:translateX(3px);}
+    .card-dark .nav-icon-wrap{background:rgba(255,255,255,0.12);color:#fff;margin-bottom:0;}
+    
+    .nav-icon-wrap{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;margin-bottom:16px;font-size:24px}
     .nav-label{font-size:17px;font-weight:700;color:#1d1d1f;margin-bottom:4px;letter-spacing:-.2px}
     .nav-desc{font-size:13px;color:#6e6e73}
     .nav-arrow{position:absolute;right:20px;bottom:20px;font-size:18px;color:#aeaeb2;transition:.2s}
-    .nav-card:hover .nav-arrow{color:#007aff;transform:translateX(3px)}
+    .nav-card:not(.card-dark):hover .nav-arrow{color:#007aff;transform:translateX(3px)}
+    
     .section-card{padding:1.8rem 2rem}
     .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
     .section-title-row{display:flex;align-items:center;gap:10px}
@@ -107,7 +131,10 @@
     .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
     .toast i{color:#34c759;font-size:16px}
     .divider{height:1px;background:rgba(0,0,0,0.07);margin:12px 0 16px}
-    .section-title{font-size:17px;font-weight:700;color:#1d1d1f;letter-spacing:-.2px}
+    
+    /* สไตล์สำหรับแท็บ Viewer Iframe */
+    #tab-viewer { flex:1; display:flex; flex-direction:column; min-height: 70vh; animation: fadeIn 0.3s; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
   </style>
 </head>
 <body>
@@ -163,26 +190,99 @@
           </button>
         </div>
 
-        <!-- TAB: HOME -->
+        <!-- TAB: HOME (DASHBOARD) -->
         <div id="tab-home">
           <div class="page-heading">สวัสดี, <span id="greet-name">-</span></div>
-          <div class="page-sub">เลือกฟังก์ชันที่ต้องการใช้งาน</div>
+          <div class="page-sub">เลือกฟังก์ชันที่ต้องการใช้งานจาก Dashboard ด้านล่าง</div>
+          
+          <!-- หมวดที่ 1: รายงานและศักยภาพ -->
+          <div style="font-size:17px;font-weight:700;color:#1d1d1f;margin-bottom:12px;display:flex;align-items:center;gap:6px">
+            <i class="ti ti-apps" style="color:#007aff"></i> ระบบประเมินและศักยภาพ
+          </div>
           <div class="nav-grid">
-            <div class="glass nav-card" onclick="goCreate()">
+            <div class="glass nav-card" onclick="openTool('1. ลักษณะบุคลิกภาพ (นก)', 'https://marketingppac-create.github.io/ppacpasathai/bird.html')">
               <div class="nav-accent acc-blue"></div>
-              <div class="nav-icon-wrap icon-blue"><i class="ti ti-file-text"></i></div>
-              <div class="nav-label">สร้างรายงานภาษาไทย</div>
-              <div class="nav-desc">Generate Thai language reports</div>
+              <div class="nav-icon-wrap icon-blue"><i class="ti ti-feather"></i></div>
+              <div class="nav-label">1. ลักษณะบุคลิกภาพ</div>
+              <div class="nav-desc">วิเคราะห์บุคลิกภาพ 4 แบบ (นก)</div>
               <i class="ti ti-arrow-right nav-arrow"></i>
             </div>
-            <div class="glass nav-card" onclick="goManage()">
+            
+            <div class="glass nav-card" onclick="openTool('2. ตารางศักยภาพ', 'https://marketingppac-create.github.io/ppacpasathai/10.html')">
               <div class="nav-accent acc-green"></div>
-              <div class="nav-icon-wrap icon-green"><i class="ti ti-layout-kanban"></i></div>
-              <div class="nav-label">จัดการงาน</div>
-              <div class="nav-desc">Task &amp; project management</div>
+              <div class="nav-icon-wrap icon-green"><i class="ti ti-table"></i></div>
+              <div class="nav-label">2. ตารางศักยภาพ</div>
+              <div class="nav-desc">ตารางประเมินผลศักยภาพ 10 ด้าน</div>
+              <i class="ti ti-arrow-right nav-arrow"></i>
+            </div>
+            
+            <div class="glass nav-card" onclick="openTool('3. การทำงานของสมอง', 'https://marketingppac-create.github.io/ppacpasathai/brain.html')">
+              <div class="nav-accent acc-purple"></div>
+              <div class="nav-icon-wrap icon-purple"><i class="ti ti-brain"></i></div>
+              <div class="nav-label">3. การทำงานของสมอง</div>
+              <div class="nav-desc">Learning Style & Type</div>
+              <i class="ti ti-arrow-right nav-arrow"></i>
+            </div>
+            
+            <div class="glass nav-card" onclick="openTool('4. สรุปศักยภาพ', 'https://marketingppac-create.github.io/ppacpasathai/career.html')">
+              <div class="nav-accent acc-orange"></div>
+              <div class="nav-icon-wrap icon-orange"><i class="ti ti-chart-pie"></i></div>
+              <div class="nav-label">4. สรุปศักยภาพ</div>
+              <div class="nav-desc">ระบบสรุปศักยภาพและ Career</div>
               <i class="ti ti-arrow-right nav-arrow"></i>
             </div>
           </div>
+
+          <!-- หมวดที่ 2: งาน Corporate -->
+          <div style="font-size:17px;font-weight:700;color:#1d1d1f;margin-bottom:12px;display:flex;align-items:center;gap:6px">
+            <i class="ti ti-briefcase" style="color:#ff3b30"></i> งาน Corporate (องค์กร)
+          </div>
+          <div class="nav-grid">
+            <div class="glass nav-card" onclick="openTool('5. SWOT และหลักสูตรฝึกอบรม', 'https://marketingppac-create.github.io/ppacpasathai/SWOT.html')">
+              <div class="nav-accent acc-red"></div>
+              <div class="nav-icon-wrap icon-red"><i class="ti ti-shield-check"></i></div>
+              <div class="nav-label">5. SWOT & ฝึกอบรม</div>
+              <div class="nav-desc">จุดแข็ง จุดอ่อน & หลักสูตรการพัฒนา</div>
+              <i class="ti ti-arrow-right nav-arrow"></i>
+            </div>
+            
+            <div class="glass nav-card" onclick="openTool('6. ปก Corporate', 'https://marketingppac-create.github.io/ppacpasathai/covercopt.html')">
+              <div class="nav-accent acc-red"></div>
+              <div class="nav-icon-wrap icon-red"><i class="ti ti-file-certificate"></i></div>
+              <div class="nav-label">6. ปก Corporate</div>
+              <div class="nav-desc">ระบบสร้างปกรายงานสำหรับองค์กร</div>
+              <i class="ti ti-arrow-right nav-arrow"></i>
+            </div>
+          </div>
+
+          <!-- หมวดที่ 3: จัดการไฟล์ & งานอื่นๆ -->
+          <div style="font-size:17px;font-weight:700;color:#1d1d1f;margin-bottom:12px;display:flex;align-items:center;gap:6px">
+            <i class="ti ti-tools" style="color:#6e6e73"></i> เครื่องมือจัดการและระบบ
+          </div>
+          <div class="nav-grid">
+            <!-- ปุ่มรวมไฟล์ สีดำ โดดเด่น -->
+            <div class="glass nav-card card-dark" onclick="openTool('7. รวมไฟล์', 'https://marketingppac-create.github.io/ppacpasathai/merger.html')">
+              <div class="nav-accent" style="background:rgba(255,255,255,0.2)"></div>
+              <div style="display:flex;align-items:center;gap:16px">
+                <div class="nav-icon-wrap"><i class="ti ti-file-zip"></i></div>
+                <div style="flex:1">
+                  <div class="nav-label">7. รวมไฟล์ (PDF Merger)</div>
+                  <div class="nav-desc">เครื่องมือจัดชุดรวมไฟล์รายงานและปกเข้าด้วยกัน</div>
+                </div>
+                <i class="ti ti-arrow-right nav-arrow"></i>
+              </div>
+            </div>
+
+            <!-- ปุ่มเปิด Google Sheets (เปิดแท็บใหม่) -->
+            <div class="glass nav-card" onclick="goManage()">
+              <div class="nav-accent acc-green"></div>
+              <div class="nav-icon-wrap icon-green"><i class="ti ti-layout-kanban"></i></div>
+              <div class="nav-label">จัดการงาน (Tasks)</div>
+              <div class="nav-desc">ระบบ Task & project (เปิดในหน้าใหม่)</div>
+              <i class="ti ti-external-link nav-arrow"></i>
+            </div>
+          </div>
+
         </div>
 
         <!-- TAB: DOCS -->
@@ -225,6 +325,23 @@
             </div>
           </div>
         </div>
+        
+        <!-- TAB: VIEWER (IFRAME สำหรับเปิดระบบรายงานภายในเว็บ) -->
+        <div id="tab-viewer" class="hidden">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding:0 4px">
+            <button onclick="closeViewer()" style="background:none;border:none;color:#007aff;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:4px;font-family:inherit;transition:.2s" onmouseover="this.style.opacity=0.7" onmouseout="this.style.opacity=1">
+              <i class="ti ti-chevron-left" style="font-size:18px"></i> กลับหน้าหลัก
+            </button>
+            <div id="viewer-title" style="font-weight:700;font-size:16px;color:#1d1d1f;letter-spacing:-0.2px">เครื่องมือ</div>
+            <button onclick="popoutViewer()" style="background:#e8f0fe;border:none;color:#007aff;font-size:13px;font-weight:600;padding:6px 14px;border-radius:20px;cursor:pointer;display:flex;align-items:center;gap:4px;transition:.2s;font-family:inherit" title="เปิดในหน้าต่างใหม่">
+              เปิดเต็มจอ <i class="ti ti-external-link" style="font-size:15px"></i>
+            </button>
+          </div>
+          <div class="glass" style="flex:1;border-radius:18px;overflow:hidden;display:flex;box-shadow:0 10px 40px rgba(0,0,0,0.08);border:1px solid rgba(0,0,0,0.05)">
+            <iframe id="tool-frame" style="width:100%;height:100%;border:none;background:#f5f5f7;" allowfullscreen allow="downloads"></iframe>
+          </div>
+        </div>
+        
       </div>
     </div>
 
@@ -263,6 +380,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbzINcJHMIKDffUng2V6s2JG
 // ตั้งค่า 3 ชั่วโมง = 10800000 มิลลิวินาที
 const SESSION_TIMEOUT = 3 * 60 * 60 * 1000; 
 let sessionCheckInterval = null;
+let currentToolUrl = ''; // เก็บ url ของเครื่องมือปัจจุบันที่กำลังเปิด
 
 let state = {
   users: { "admin": { "pass": "ppac2024", "role": "admin" } },
@@ -468,8 +586,12 @@ document.getElementById('doc-mgr-icon').onclick = function() {
   } else docIconTimer = setTimeout(() => docIconClicks = 0, 2000);
 };
 
+// สลับเมนูด้านบน และเคลียร์ iframe กลับเป็นค่าว่างเมื่อกดสลับ
 function switchTab(name, btn) {
-  ['home','docs','log'].forEach(t => document.getElementById('tab-'+t).classList.add('hidden'));
+  ['home','docs','log','viewer'].forEach(t => {
+      let el = document.getElementById('tab-'+t);
+      if(el) el.classList.add('hidden');
+  });
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('tab-'+name).classList.remove('hidden');
   if (btn) btn.classList.add('active');
@@ -477,14 +599,43 @@ function switchTab(name, btn) {
   if (name === 'log')  renderLog();
 }
 
-function goCreate() {
-  state.logs.unshift({ user: state.curUser, time: new Date().toLocaleString('th-TH'), note: 'คลิก: สร้างรายงานภาษาไทย' });
-  save(); window.open('https://marketingppac-create.github.io/ppacpasathai/genarate.html', '_blank');
+// เปิดระบบไว้ด้านในเว็บไซต์เลย (ฝัง Iframe)
+function openTool(name, url) {
+  state.logs.unshift({ user: state.curUser, time: new Date().toLocaleString('th-TH'), note: 'เปิดใช้งาน: ' + name });
+  save();
+  
+  currentToolUrl = url;
+  
+  // ซ่อนทุกหน้า
+  ['home','docs','log'].forEach(t => document.getElementById('tab-'+t).classList.add('hidden'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  
+  // โชว์หน้าต่างของ Iframe
+  const viewer = document.getElementById('tab-viewer');
+  viewer.classList.remove('hidden');
+  document.getElementById('viewer-title').textContent = name;
+  document.getElementById('tool-frame').src = url;
+  
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+// เมื่อต้องการปิดการทำงานของ iframe กลับสู่หน้าหลัก
+function closeViewer() {
+  document.getElementById('tool-frame').src = '';
+  document.getElementById('tab-viewer').classList.add('hidden');
+  switchTab('home', document.querySelectorAll('.tab-btn')[0]); 
+}
+
+// หากผู้ใช้อยากเปิดเครื่องมือนี้ให้เต็มจอในแท็บใหม่จริงๆ ก็สามารถกดปุ่ม pop-out ได้
+function popoutViewer() {
+  if(currentToolUrl) window.open(currentToolUrl, '_blank');
+}
+
+// ปุ่มเปิด Google Sheet ให้เปิดแท็บใหม่เสมอ (เพราะ Sheet มักจะบล็อกไม่ให้เปิดใน iframe)
 function goManage() {
   state.logs.unshift({ user: state.curUser, time: new Date().toLocaleString('th-TH'), note: 'คลิก: จัดการงาน' });
-  save(); window.open('https://script.google.com/macros/s/AKfycbxcE64x4vMA_Xmi2w5AYUAsoLM-oxBt_XTKfYSxQZZmeHDvG-nQN9-BG2ze0NF7AgJMcA/exec', '_blank');
+  save(); 
+  window.open('https://script.google.com/macros/s/AKfycbxcE64x4vMA_Xmi2w5AYUAsoLM-oxBt_XTKfYSxQZZmeHDvG-nQN9-BG2ze0NF7AgJMcA/exec', '_blank');
 }
 
 function renderDocs() {
