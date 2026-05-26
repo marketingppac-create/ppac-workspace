@@ -63,15 +63,38 @@
     .btn-primary:active{transform:scale(.98);background:#020617;}
     .err-msg{font-size:13px;color:#EF4444;text-align:center;margin-top:12px;min-height:18px;font-weight:400;}
     
-    .topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 40px;background:rgba(255,255,255,0.85);backdrop-filter:saturate(180%) blur(24px);-webkit-backdrop-filter:saturate(180%) blur(24px);border-bottom:1px solid rgba(0,0,0,0.03);position:sticky;top:0;z-index:100}
-    .topbar-title{font-size:17px;font-weight:600;color:#0F172A;letter-spacing:-.02em;cursor:default;user-select:none}
+    /* 🛠️ TOPBAR แบบใหม่: รวมทุกอย่างไว้ด้านบนเพื่อคืนพื้นที่ทำงาน */
+    .topbar{
+      display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; 
+      padding:12px 24px; background:rgba(255,255,255,0.85);
+      backdrop-filter:saturate(180%) blur(24px); -webkit-backdrop-filter:saturate(180%) blur(24px);
+      border-bottom:1px solid rgba(0,0,0,0.03); position:sticky; top:0; z-index:100; gap: 16px;
+    }
+    .topbar-left { display: flex; align-items: center; gap: 16px; flex: 1; }
+    .topbar-title{font-size:17px;font-weight:600;color:#0F172A;letter-spacing:-.02em;cursor:default;user-select:none; white-space: nowrap;}
+    .welcome-text{font-size: 14px; color: #64748B; font-weight: 500; border-left: 1px solid #E2E8F0; padding-left: 16px; white-space: nowrap;}
+    .welcome-text span { font-weight: 600; color: #0F172A; }
+    
+    .topbar-center { display: flex; justify-content: center; flex: 1; min-width: 300px; }
+    .topbar-right { display: flex; align-items: center; justify-content: flex-end; flex: 1; gap: 10px; }
+    
     .user-pill{display:flex;align-items:center;gap:10px;background:#F8FAFC;border:1px solid #F1F5F9;border-radius:50px;padding:6px 16px 6px 6px}
     .avatar{width:28px;height:28px;border-radius:50%;background:#0F172A;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#fff}
     .user-name{font-size:13px;color:#0F172A;font-weight:500}
     .btn-logout{background:none;border:none;color:#94A3B8;cursor:pointer;font-size:14px;margin-left:4px;transition:.15s;padding:2px}
     .btn-logout:hover{color:#EF4444}
     
-    /* 🛠️ แก้ไขให้ Container หลักขยายเต็มที่ */
+    /* 🛠️ Clean Minimal Tabs ย้ายมาอยู่ Topbar */
+    .tabs{display:flex;gap:4px;background:rgba(0,0,0,0.04);border-radius:12px;padding:4px;margin:0; flex-shrink:0;}
+    .tab-btn{padding:8px 16px;border-radius:8px;border:none;background:none;color:#64748B;font-size:14px;font-weight:500;cursor:pointer;transition:all .2s ease;font-family:inherit; white-space: nowrap;}
+    .tab-btn:hover:not(.active){color:#0F172A;}
+    .tab-btn.active{background:#fff;color:#0F172A;font-weight:600;box-shadow:0 2px 10px rgba(0,0,0,0.04)}
+
+    @media (max-width: 900px) {
+      .welcome-text { display: none; } /* ซ่อนข้อความต้อนรับบนจอเล็กเพื่อไม่ให้รก */
+      .topbar-center { order: 3; flex: 100%; margin-top: 8px; }
+    }
+    
     .content{
       flex: 1; 
       width: 100%; 
@@ -84,17 +107,17 @@
     }
     .content-inner{
       width: 100%; 
-      max-width: 1400px; /* ขยายความกว้างเต็มตา */
+      max-width: 1400px;
       margin: 0 auto; 
       display: flex; 
       flex-direction: column; 
       flex: 1;
     }
     
-    .page-heading{font-size:28px;font-weight:600;color:#0F172A;letter-spacing:-.03em;margin-bottom:8px;text-align:center;}
-    .page-sub{font-size:15px;color:#64748B;font-weight:300;margin-bottom:32px;letter-spacing:0;text-align:center;}
+    .page-heading{font-size:28px;font-weight:600;color:#0F172A;letter-spacing:-.03em;margin-bottom:8px;}
+    .page-sub{font-size:15px;color:#64748B;font-weight:300;margin-bottom:32px;letter-spacing:0;}
     
-    /* 🛠️ 4 ช่อง 1 แถว */
+    /* 4 ช่อง 1 แถว */
     .nav-grid{display:grid;grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));gap:24px;margin-bottom:48px}
     .nav-grid.grid-4 { grid-template-columns: repeat(4, 1fr); }
     @media (max-width: 1024px) { .nav-grid.grid-4 { grid-template-columns: repeat(2, 1fr); } }
@@ -174,12 +197,6 @@
     .empty-doc{text-align:center;padding:3rem;color:#94A3B8;font-size:14px;font-weight:300;}
     .empty-doc i{font-size:36px;display:block;margin-bottom:12px;opacity:.4}
     
-    /* Clean Minimal Tabs Centered */
-    .tabs{display:flex;gap:4px;background:rgba(0,0,0,0.03);border-radius:14px;padding:6px;margin:0 auto 32px; max-width:600px; flex-shrink:0;}
-    .tab-btn{flex:1;padding:10px 16px;border-radius:10px;border:none;background:none;color:#64748B;font-size:14px;font-weight:500;cursor:pointer;transition:all .2s ease;font-family:inherit}
-    .tab-btn:hover:not(.active){color:#0F172A;}
-    .tab-btn.active{background:#fff;color:#0F172A;font-weight:600;box-shadow:0 2px 10px rgba(0,0,0,0.04)}
-    
     .log-wrap{overflow-x:auto}
     .log-table{width:100%;border-collapse:collapse;font-size:13px}
     .log-table th{text-align:left;color:#64748B;font-weight:500;padding:12px 16px;border-bottom:1px solid #E2E8F0;font-size:11px;text-transform:uppercase;letter-spacing:.5px}
@@ -209,12 +226,12 @@
     .toast i{color:#4ADE80;font-size:18px}
     .divider{height:1px;background:#F1F5F9;margin:16px 0 20px}
     
-    /* 🛠️ บังคับให้ Iframe กล่องทำงานขยายเต็มความสูง (ยืดลงไปสุด) */
+    /* 🛠️ บังคับให้ Iframe กล่องทำงานขยายเต็มความสูงและเลื่อนได้ (ล็อกความสูงหน้าจอ) */
     #tab-viewer, #tab-tasks { 
-      flex: 1; 
       display: flex; 
       flex-direction: column; 
-      min-height: calc(100vh - 160px); /* สำคัญ: บังคับความสูงเต็มหน้าจอ */
+      height: calc(100vh - 120px); /* ลบความสูงของ Topbar และ Padding ออก เพื่อบังคับให้พอดีจอเป๊ะ */
+      min-height: 0; /* ป้องกันไม่ให้ทะลุจอ */
       animation: fadeIn 0.4s ease-out; 
     }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -222,13 +239,13 @@
     .iframe-glass {
         flex: 1;
         height: 100%;
-        border-radius: 16px; /* ขอบมนลงนิดนึงให้ดูพรีเมียม */
+        border-radius: 16px; 
         overflow: hidden;
         display: flex;
         position: relative;
         border: 1px solid rgba(0,0,0,0.06);
         background: #ffffff;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.03); /* เพิ่มเงาให้ดูมีมิติ */
+        box-shadow: 0 4px 20px rgba(0,0,0,0.03); 
     }
     .iframe-glass.fullscreen-mode {
         position: fixed !important;
@@ -261,8 +278,7 @@
     .btn-exit-fs:hover { transform: scale(1.05); }
     .iframe-glass.fullscreen-mode .btn-exit-fs { display: flex; }
     
-    .section-title { font-weight: 600; font-size: 16px; color: #0F172A; }
-    .category-title { font-size:13px; font-weight:600; color:#94A3B8; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:24px; display:flex; align-items:center; justify-content:center; gap:8px; }
+    .category-title { font-size:13px; font-weight:600; color:#94A3B8; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:24px; display:flex; align-items:center; gap:8px; }
   </style>
 </head>
 <body>
@@ -294,19 +310,15 @@
 
     <!-- MAIN -->
     <div id="main-screen" class="hidden" style="flex:1;display:flex;flex-direction:column">
+      
+      <!-- 🛠️ NEW TOPBAR: รวมทุกอย่างไว้บาร์ด้านบน -->
       <div class="topbar">
-        <div class="topbar-title" id="workspace-title">P-PAC Workspace</div>
-        <div class="user-pill">
-          <div class="avatar" id="user-avatar">U</div>
-          <span class="user-name" id="user-display">-</span>
-          <button class="btn-logout" id="btn-logout" title="ออกจากระบบ">
-            <i class="ti ti-logout" style="font-size:16px"></i>
-          </button>
+        <div class="topbar-left">
+          <div class="topbar-title" id="workspace-title">P-PAC Workspace</div>
+          <div class="welcome-text">ยินดีต้อนรับ, <span id="greet-name">-</span></div>
         </div>
-      </div>
-
-      <div class="content">
-        <div class="content-inner">
+        
+        <div class="topbar-center">
           <div class="tabs">
             <button class="tab-btn" onclick="switchTab('tasks',this)">
               <i class="ti ti-layout-kanban" style="font-size:16px;margin-right:6px;vertical-align:-2px"></i>จัดการงาน
@@ -321,6 +333,21 @@
               <i class="ti ti-history" style="font-size:16px;margin-right:6px;vertical-align:-2px"></i>ประวัติ
             </button>
           </div>
+        </div>
+
+        <div class="topbar-right">
+          <div class="user-pill">
+            <div class="avatar" id="user-avatar">U</div>
+            <span class="user-name" id="user-display">-</span>
+            <button class="btn-logout" id="btn-logout" title="ออกจากระบบ">
+              <i class="ti ti-logout" style="font-size:16px"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="content-inner">
 
           <!-- TAB: TASKS (จัดการงาน) -->
           <div id="tab-tasks" class="hidden">
@@ -341,12 +368,10 @@
 
           <!-- TAB: HOME (DASHBOARD) -->
           <div id="tab-home">
-            <div class="page-heading">ยินดีต้อนรับ, <span id="greet-name">-</span></div>
-            <div class="page-sub">เลือกเครื่องมือที่คุณต้องการเพื่อเริ่มต้นการทำงาน</div>
+            
+            <!-- 🛠️ ลบข้อความที่ขอออกไปแล้ว ทำให้การ์ด 4 ใบ ดันขึ้นไปชิดด้านบนเลย -->
             
             <!-- หมวดที่ 1: ระบบประเมินและศักยภาพ (จัด 4 ช่อง 1 แถว) -->
-            <div class="category-title">ระบบประเมินและศักยภาพ</div>
-            <!-- เติม class grid-4 เพื่อล็อกให้กว้าง 4 คอลัมน์เป๊ะๆ -->
             <div class="nav-grid grid-4">
               <div class="glass nav-card" onclick="openTool('1. ลักษณะบุคลิกภาพ (นก)', 'https://marketingppac-create.github.io/ppacpasathai/bird.html')">
                 <div class="nav-icon-wrap"><i class="ti ti-feather"></i></div>
@@ -420,7 +445,7 @@
               <div class="section-header">
                 <div class="section-title-row">
                   <i class="ti ti-folder section-icon" id="doc-mgr-icon"></i>
-                  <span class="section-title">รายการเอกสาร</span>
+                  <span style="font-weight: 600; font-size: 16px; color: #0F172A;">รายการเอกสาร</span>
                   <span class="badge" id="doc-count">0 รายการ</span>
                 </div>
               </div>
@@ -729,7 +754,7 @@ function closeViewer() {
   document.getElementById('viewer-fs').classList.remove('fullscreen-mode'); 
   
   let homeBtn = document.querySelector('button[onclick*="switchTab(\'home\'"]');
-  switchTab('home', homeBtn || document.querySelectorAll('.tab-btn')[1]); 
+  switchTab('home', homeBtn || document.querySelectorAll('.tab-btn')[2]); 
 }
 
 function toggleFS(id) {
