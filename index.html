@@ -95,12 +95,12 @@
       .topbar-center { order: 3; flex: 100%; margin-top: 8px; }
     }
     
+    /* 🛠️ แก้ไขการแสดงผล Scroll ของพื้นที่ Content ให้เลื่อนลงได้สุด */
     .content{
       flex: 1; 
       width: 100%; 
       padding: 24px 24px; 
-      display: flex; 
-      flex-direction: column; 
+      display: block; /* เปลี่ยนเป็น Block เพื่อแก้ปัญหา Flexbox บัง Scrollbar */
       overflow-y: auto; 
       overflow-x: hidden; 
       scroll-behavior: smooth;
@@ -109,9 +109,8 @@
       width: 100%; 
       max-width: 1400px;
       margin: 0 auto; 
-      display: flex; 
-      flex-direction: column; 
-      flex: 1;
+      display: block; 
+      padding-bottom: 60px; /* เพิ่มพื้นที่หายใจด้านล่างให้เห็นการ์ดครบ */
     }
     
     .page-heading{font-size:28px;font-weight:600;color:#0F172A;letter-spacing:-.03em;margin-bottom:8px;}
@@ -226,12 +225,12 @@
     .toast i{color:#4ADE80;font-size:18px}
     .divider{height:1px;background:#F1F5F9;margin:16px 0 20px}
     
-    /* 🛠️ บังคับให้ Iframe กล่องทำงานขยายเต็มความสูงและเลื่อนได้ (ล็อกความสูงหน้าจอ) */
+    /* 🛠️ บังคับให้ Iframe กล่องทำงานขยายเต็มความสูง */
     #tab-viewer, #tab-tasks { 
       display: flex; 
       flex-direction: column; 
-      height: calc(100vh - 120px); /* ลบความสูงของ Topbar และ Padding ออก เพื่อบังคับให้พอดีจอเป๊ะ */
-      min-height: 0; /* ป้องกันไม่ให้ทะลุจอ */
+      height: calc(100vh - 120px); 
+      min-height: 0; 
       animation: fadeIn 0.4s ease-out; 
     }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -308,10 +307,10 @@
       </div>
     </div>
 
-    <!-- MAIN -->
-    <div id="main-screen" class="hidden" style="flex:1;display:flex;flex-direction:column">
+    <!-- MAIN: 🛠️ เพิ่ม overflow:hidden และ min-height:0 เพื่อบังคับให้ Content ใช้ Scrollbar -->
+    <div id="main-screen" class="hidden" style="flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0;">
       
-      <!-- 🛠️ NEW TOPBAR: รวมทุกอย่างไว้บาร์ด้านบน -->
+      <!-- TOPBAR: รวมทุกอย่างไว้บาร์ด้านบน -->
       <div class="topbar">
         <div class="topbar-left">
           <div class="topbar-title" id="workspace-title">P-PAC Workspace</div>
@@ -368,8 +367,6 @@
 
           <!-- TAB: HOME (DASHBOARD) -->
           <div id="tab-home">
-            
-            <!-- 🛠️ ลบข้อความที่ขอออกไปแล้ว ทำให้การ์ด 4 ใบ ดันขึ้นไปชิดด้านบนเลย -->
             
             <!-- หมวดที่ 1: ระบบประเมินและศักยภาพ (จัด 4 ช่อง 1 แถว) -->
             <div class="nav-grid grid-4">
