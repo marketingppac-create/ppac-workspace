@@ -79,26 +79,9 @@
     }
     body.focus-mode .top-edge-trigger { display: block; }
     
-    /* ติ่ง Grabber (ให้จิ้มเรียกเมนูบนมือถือ/แท็บเล็ต) */
-    .topbar-grabber {
-        position: fixed; top: 0; left: 50%; transform: translateX(-50%) translateY(-100%);
-        background: #0F172A; color: #fff; padding: 4px 24px; border-radius: 0 0 16px 16px;
-        cursor: pointer; z-index: 10000; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        display: flex; align-items: center; justify-content: center;
-        opacity: 0; pointer-events: none;
-    }
-    body.focus-mode .topbar-grabber { 
-        opacity: 1; pointer-events: auto; transform: translateX(-50%) translateY(0); 
-    }
-    .topbar-grabber:hover { padding-top: 8px; padding-bottom: 6px; }
-    
     /* สถานะแสดง Topbar ชั่วคราวเมื่อ Hover หรือจิ้ม */
     body.focus-mode.reveal-topbar .topbar {
         transform: translateY(0); opacity: 1; pointer-events: auto;
-    }
-    body.focus-mode.reveal-topbar .topbar-grabber {
-        transform: translateX(-50%) translateY(-100%); opacity: 0; pointer-events: none;
     }
     
     /* ปุ่มพับเมนูเก็บเอง (อยู่ในแถบ Topbar ฝั่งขวา) */
@@ -164,6 +147,30 @@
       margin: 0 auto; 
       display: block; 
       padding-bottom: 60px;
+    }
+
+    /* ✨ ขยายพื้นที่การทำงานให้สุดขอบจอด้านล่างเมื่ออยู่ในโหมด Iframe */
+    body.focus-mode .content {
+      padding-bottom: 0 !important;
+    }
+    body.focus-mode .content-inner {
+      padding-bottom: 0 !important;
+    }
+    body.focus-mode #tab-viewer, 
+    body.focus-mode #tab-tasks {
+      height: calc(100vh - 24px); /* ดันให้สุดขอบจอด้านล่าง */
+    }
+    body.focus-mode .iframe-glass {
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+      border-bottom: none;
+    }
+    @media (min-width: 901px) {
+      body.focus-mode .viewer-sidebar {
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+        border-bottom: none;
+      }
     }
     
     .page-heading{font-size:28px;font-weight:600;color:#0F172A;letter-spacing:-.03em;margin-bottom:8px;}
@@ -466,10 +473,7 @@
     <span class="blob3"></span>
   </div>
 
-  <!-- 💡 ติ่งเรียกเมนู & โซนจับเมาส์ขอบจอ -->
-  <div class="topbar-grabber" id="topbar-grabber" onclick="document.body.classList.add('reveal-topbar')" title="ดึงเมนูลงมา">
-      <i class="ti ti-chevron-down"></i>
-  </div>
+  <!-- 💡 โซนจับเมาส์ขอบจอ (สำหรับสัมผัสแตะ/เอาเมาส์ชนเพื่อเรียกเมนูบนลงมา) -->
   <div class="top-edge-trigger" id="top-edge-trigger"></div>
 
   <div class="wrap">
@@ -796,12 +800,21 @@ contentArea.addEventListener('scroll', () => {
   lastScrollY = currentScroll;
 });
 
-// ✨ ระบบ Smart Edge Hover ดักจับเมาส์ชนขอบจอเพื่อแสดงเมนู
+// ✨ ระบบ Smart Edge Hover ดักจับเมาส์ชนขอบจอเพื่อแสดงเมนู (รองรับการแตะหน้าจอบนมาร์ทโฟนด้วย)
 let revealTimer;
-document.getElementById('top-edge-trigger').addEventListener('mouseenter', () => {
+const edgeTrigger = document.getElementById('top-edge-trigger');
+const topbarArea = document.getElementById('main-topbar');
+
+// สำหรับ Computer (ใช้ Mouse Hover)
+edgeTrigger.addEventListener('mouseenter', () => {
     document.body.classList.add('reveal-topbar');
 });
-document.getElementById('main-topbar').addEventListener('mouseleave', () => {
+// สำหรับ Smartphone/Tablet (ใช้การแตะ/Touch)
+edgeTrigger.addEventListener('touchstart', (e) => {
+    document.body.classList.add('reveal-topbar');
+}, {passive: true});
+
+topbarArea.addEventListener('mouseleave', () => {
     if (document.body.classList.contains('focus-mode')) {
         // ดีเลย์ซ่อนกลับ 0.8 วินาที เพื่อไม่ให้มันหายไปไวเกินไป
         revealTimer = setTimeout(() => {
@@ -809,7 +822,7 @@ document.getElementById('main-topbar').addEventListener('mouseleave', () => {
         }, 800); 
     }
 });
-document.getElementById('main-topbar').addEventListener('mouseenter', () => {
+topbarArea.addEventListener('mouseenter', () => {
      clearTimeout(revealTimer); // ถ้านำเมาส์กลับมาวาง ยกเลิกการซ่อน
 });
 
