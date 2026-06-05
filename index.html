@@ -63,6 +63,52 @@
     .btn-primary:active{transform:scale(.98);background:#020617;}
     .err-msg{font-size:13px;color:#EF4444;text-align:center;margin-top:12px;min-height:18px;font-weight:400;}
     
+    /* 💡 SMART FOCUS MODE (ระบบซ่อน Topbar สำหรับหน้า Iframe) */
+    body.focus-mode .topbar {
+        position: absolute; /* ลอยทับ Content จะได้ไม่กินพื้นที่ Iframe */
+        width: 100%;
+        transform: translateY(-100%);
+        opacity: 0;
+        pointer-events: none;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+    }
+    
+    /* โซนขอบจอล่องหน สำหรับเอาเมาส์ชนให้เมนูเด้ง (Edge Hover) */
+    .top-edge-trigger {
+        position: fixed; top: 0; left: 0; right: 0; height: 15px; z-index: 9999; display: none;
+    }
+    body.focus-mode .top-edge-trigger { display: block; }
+    
+    /* ติ่ง Grabber (ให้จิ้มเรียกเมนูบนมือถือ/แท็บเล็ต) */
+    .topbar-grabber {
+        position: fixed; top: 0; left: 50%; transform: translateX(-50%) translateY(-100%);
+        background: #0F172A; color: #fff; padding: 4px 24px; border-radius: 0 0 16px 16px;
+        cursor: pointer; z-index: 10000; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        display: flex; align-items: center; justify-content: center;
+        opacity: 0; pointer-events: none;
+    }
+    body.focus-mode .topbar-grabber { 
+        opacity: 1; pointer-events: auto; transform: translateX(-50%) translateY(0); 
+    }
+    .topbar-grabber:hover { padding-top: 8px; padding-bottom: 6px; }
+    
+    /* สถานะแสดง Topbar ชั่วคราวเมื่อ Hover หรือจิ้ม */
+    body.focus-mode.reveal-topbar .topbar {
+        transform: translateY(0); opacity: 1; pointer-events: auto;
+    }
+    body.focus-mode.reveal-topbar .topbar-grabber {
+        transform: translateX(-50%) translateY(-100%); opacity: 0; pointer-events: none;
+    }
+    
+    /* ปุ่มพับเมนูเก็บเอง (อยู่ในแถบ Topbar ฝั่งขวา) */
+    .btn-hide-topbar {
+        background: rgba(0,0,0,0.05); border: none; padding: 4px; border-radius: 8px; cursor: pointer; color: #64748B;
+        display: none; align-items: center; justify-content: center; transition: .2s; margin-left: 8px;
+    }
+    .btn-hide-topbar:hover { background: rgba(0,0,0,0.1); color: #0F172A; }
+    body.focus-mode .btn-hide-topbar { display: flex; }
+
     /* 🛠️ TOPBAR */
     .topbar{
       display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; 
@@ -419,6 +465,13 @@
     <span class="blob2"></span>
     <span class="blob3"></span>
   </div>
+
+  <!-- 💡 ติ่งเรียกเมนู & โซนจับเมาส์ขอบจอ -->
+  <div class="topbar-grabber" id="topbar-grabber" onclick="document.body.classList.add('reveal-topbar')" title="ดึงเมนูลงมา">
+      <i class="ti ti-chevron-down"></i>
+  </div>
+  <div class="top-edge-trigger" id="top-edge-trigger"></div>
+
   <div class="wrap">
 
     <!-- LOGIN -->
@@ -474,6 +527,10 @@
               <i class="ti ti-logout" style="font-size:16px"></i>
             </button>
           </div>
+          <!-- 💡 ปุ่มซ่อนเมนูเองด้วยมือ (จะเห็นเฉพาะตอนอยู่ใน Focus Mode) -->
+          <button class="btn-hide-topbar" id="btn-hide-topbar" onclick="document.body.classList.remove('reveal-topbar')" title="พับเก็บแถบเมนู">
+            <i class="ti ti-chevrons-up" style="font-size: 20px;"></i>
+          </button>
         </div>
       </div>
 
@@ -714,30 +771,46 @@ const btnLogin = document.getElementById('btn-login');
 btnLogin.disabled = true;
 btnLogin.textContent = 'Loading...';
 
-// ✨ ฟังก์ชัน Auto-hide Topbar เมื่อ Scroll
+// ✨ ฟังก์ชัน Auto-hide Topbar เมื่อ Scroll (สำหรับหน้าปกติ)
 const contentArea = document.getElementById('scrollable-content');
 const topbar = document.getElementById('main-topbar');
 let lastScrollY = 0;
 
 contentArea.addEventListener('scroll', () => {
+  // ข้ามการซ่อนแบบเลื่อน หากอยู่ในโหมดโฟกัส Iframe
+  if (document.body.classList.contains('focus-mode')) return;
+
   let currentScroll = contentArea.scrollTop;
   
-  // ป้องกันบักเด้ง (Bounce effect) ตอนเลื่อนไปบนสุดในมือถือ/Mac
   if (currentScroll <= 0) {
     topbar.classList.remove('hide-on-scroll');
     return;
   }
   
-  // เลื่อนลงเกิน 60px จะทำการซ่อน Topbar
   if (currentScroll > lastScrollY && currentScroll > 60) {
     topbar.classList.add('hide-on-scroll');
-  } 
-  // เลื่อนขึ้น จะทำการแสดง Topbar กลับมา
-  else if (currentScroll < lastScrollY) {
+  } else if (currentScroll < lastScrollY) {
     topbar.classList.remove('hide-on-scroll');
   }
   
   lastScrollY = currentScroll;
+});
+
+// ✨ ระบบ Smart Edge Hover ดักจับเมาส์ชนขอบจอเพื่อแสดงเมนู
+let revealTimer;
+document.getElementById('top-edge-trigger').addEventListener('mouseenter', () => {
+    document.body.classList.add('reveal-topbar');
+});
+document.getElementById('main-topbar').addEventListener('mouseleave', () => {
+    if (document.body.classList.contains('focus-mode')) {
+        // ดีเลย์ซ่อนกลับ 0.8 วินาที เพื่อไม่ให้มันหายไปไวเกินไป
+        revealTimer = setTimeout(() => {
+            document.body.classList.remove('reveal-topbar');
+        }, 800); 
+    }
+});
+document.getElementById('main-topbar').addEventListener('mouseenter', () => {
+     clearTimeout(revealTimer); // ถ้านำเมาส์กลับมาวาง ยกเลิกการซ่อน
 });
 
 function restoreSessionFast() {
@@ -913,6 +986,9 @@ document.getElementById('doc-mgr-icon').onclick = function() {
 };
 
 function switchTab(name, btn) {
+  // 💡 ล้างโหมดซ่อนเมนู ทุกครั้งที่มีการเปลี่ยนแท็บ
+  document.body.classList.remove('focus-mode', 'reveal-topbar');
+
   // บังคับแสดงแถบ Topbar เวลาเปลี่ยนแท็บ เผื่อถูกซ่อนอยู่
   document.getElementById('main-topbar').classList.remove('hide-on-scroll');
   
@@ -936,9 +1012,17 @@ function switchTab(name, btn) {
   if (name === 'home') {
       document.getElementById('tool-frame').src = '';
   }
+
+  // ถ้าเข้าหน้า จัดการงาน (Iframe) ให้บังคับเข้าโหมดซ่อนเมนูอัตโนมัติ
+  if (name === 'tasks') {
+      document.body.classList.add('focus-mode');
+  }
 }
 
 function openTool(name, url) {
+  // 💡 เปิดการใช้งานระบบซ่อนเมนูอัตโนมัติ (Focus Mode) เพื่อให้ได้พื้นที่ Iframe กว้างสุด
+  document.body.classList.add('focus-mode');
+
   // บังคับแสดงแถบ Topbar เวลาคลิกเข้าเมนู
   document.getElementById('main-topbar').classList.remove('hide-on-scroll');
 
