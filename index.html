@@ -69,7 +69,15 @@
       padding:12px 24px; background:rgba(255,255,255,0.85);
       backdrop-filter:saturate(180%) blur(24px); -webkit-backdrop-filter:saturate(180%) blur(24px);
       border-bottom:1px solid rgba(0,0,0,0.03); position:sticky; top:0; z-index:100; gap: 16px;
+      /* ✨ Animation สำหรับซ่อน/แสดง Topbar */
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
+    
+    /* ✨ คลาสสำหรับซ่อน Topbar */
+    .topbar.hide-on-scroll {
+      transform: translateY(-100%);
+    }
+
     .topbar-left { display: flex; align-items: center; gap: 16px; flex: 1; }
     .topbar-title{font-size:17px;font-weight:600;color:#0F172A;letter-spacing:-.02em;cursor:default;user-select:none; white-space: nowrap;}
     .welcome-text{font-size: 14px; color: #64748B; font-weight: 500; border-left: 1px solid #E2E8F0; padding-left: 16px; white-space: nowrap;}
@@ -435,7 +443,7 @@
     <div id="main-screen" class="hidden" style="flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0;">
       
       <!-- TOPBAR -->
-      <div class="topbar">
+      <div class="topbar" id="main-topbar">
         <div class="topbar-left">
           <div class="topbar-title" id="workspace-title">P-PAC Workspace</div>
           <div class="welcome-text">ยินดีต้อนรับ, <span id="greet-name">-</span></div>
@@ -469,7 +477,7 @@
         </div>
       </div>
 
-      <div class="content">
+      <div class="content" id="scrollable-content">
         <div class="content-inner">
 
           <!-- TAB: TASKS (จัดการงาน) -->
@@ -706,6 +714,32 @@ const btnLogin = document.getElementById('btn-login');
 btnLogin.disabled = true;
 btnLogin.textContent = 'Loading...';
 
+// ✨ ฟังก์ชัน Auto-hide Topbar เมื่อ Scroll
+const contentArea = document.getElementById('scrollable-content');
+const topbar = document.getElementById('main-topbar');
+let lastScrollY = 0;
+
+contentArea.addEventListener('scroll', () => {
+  let currentScroll = contentArea.scrollTop;
+  
+  // ป้องกันบักเด้ง (Bounce effect) ตอนเลื่อนไปบนสุดในมือถือ/Mac
+  if (currentScroll <= 0) {
+    topbar.classList.remove('hide-on-scroll');
+    return;
+  }
+  
+  // เลื่อนลงเกิน 60px จะทำการซ่อน Topbar
+  if (currentScroll > lastScrollY && currentScroll > 60) {
+    topbar.classList.add('hide-on-scroll');
+  } 
+  // เลื่อนขึ้น จะทำการแสดง Topbar กลับมา
+  else if (currentScroll < lastScrollY) {
+    topbar.classList.remove('hide-on-scroll');
+  }
+  
+  lastScrollY = currentScroll;
+});
+
 function restoreSessionFast() {
   let session = JSON.parse(localStorage.getItem('ppac_session'));
   if (session && (Date.now() - session.lastActive <= SESSION_TIMEOUT)) {
@@ -848,6 +882,9 @@ function logout() {
   document.getElementById('inp-user').value = ''; document.getElementById('inp-pass').value = '';
   document.getElementById('tab-log-btn').style.display = 'none';
   switchTab('home', document.querySelector('.tab-btn:nth-child(2)'));
+  
+  // บังคับแสดงเมนู
+  document.getElementById('main-topbar').classList.remove('hide-on-scroll');
 }
 
 document.getElementById('btn-login').onclick = login;
@@ -876,6 +913,9 @@ document.getElementById('doc-mgr-icon').onclick = function() {
 };
 
 function switchTab(name, btn) {
+  // บังคับแสดงแถบ Topbar เวลาเปลี่ยนแท็บ เผื่อถูกซ่อนอยู่
+  document.getElementById('main-topbar').classList.remove('hide-on-scroll');
+  
   // ซ่อนทุกหน้า
   ['home','docs','log','viewer','tasks'].forEach(t => {
       let el = document.getElementById('tab-'+t);
@@ -899,6 +939,9 @@ function switchTab(name, btn) {
 }
 
 function openTool(name, url) {
+  // บังคับแสดงแถบ Topbar เวลาคลิกเข้าเมนู
+  document.getElementById('main-topbar').classList.remove('hide-on-scroll');
+
   state.logs.unshift({ user: state.curUser, time: new Date().toLocaleString('th-TH'), note: 'เปิดใช้งาน: ' + name });
   save();
   
