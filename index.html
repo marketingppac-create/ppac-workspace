@@ -260,14 +260,23 @@
     .viewer-sidebar.collapsed .sidebar-item { justify-content: center; padding: 12px 0; }
     .viewer-sidebar.collapsed .sidebar-item i { font-size: 22px; }
 
-    /* ✨ ปุ่มยุบ/ขยาย */
-    .sidebar-toggle-btn {
-      background: none; border: none; color: #94A3B8; cursor: pointer; padding: 8px; border-radius: 8px;
-      display: flex; align-items: center; justify-content: center; transition: all .2s ease; margin-bottom: 8px;
-      align-self: flex-end;
+    /* ✨ ส่วนควบคุมด้านบนของ Sidebar */
+    .sidebar-top-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 4px;
+      margin-bottom: 12px;
     }
-    .sidebar-toggle-btn:hover { background: rgba(15,23,42,0.05); color: #0F172A; }
-    .viewer-sidebar.collapsed .sidebar-toggle-btn { align-self: center; }
+    .viewer-sidebar.collapsed .sidebar-top-actions {
+      flex-direction: column;
+      align-items: center;
+    }
+    .sidebar-action-btn {
+      background: none; border: none; color: #94A3B8; cursor: pointer; padding: 8px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center; transition: all .2s ease;
+    }
+    .sidebar-action-btn i { font-size: 20px; }
+    .sidebar-action-btn:hover { background: rgba(15,23,42,0.05); color: #0F172A; }
 
     /* ซ่อน Scrollbar ของ Sidebar ให้ดูพรีเมียม */
     .viewer-sidebar::-webkit-scrollbar { width: 4px; height: 4px; }
@@ -336,6 +345,7 @@
       }
       .viewer-sidebar.collapsed { width: 100%; padding: 12px; } /* ป้องกันพังบนมือถือ */
       .viewer-sidebar.collapsed .sidebar-item span { display: inline; }
+      .sidebar-top-actions { margin-bottom: 0; align-items: center; }
       .sidebar-toggle-btn { display: none !important; } /* ซ่อนปุ่มยุบบนมือถือ */
       
       .sidebar-category.hide-mobile {
@@ -595,9 +605,14 @@
             
             <!-- Sidebar Navigation (เปลี่ยนหน้าได้รวดเร็ว) -->
             <aside class="viewer-sidebar glass" id="viewer-sidebar">
-                <button class="sidebar-toggle-btn" onclick="toggleSidebar()" title="ยุบ/ขยาย แถบเมนู">
-                    <i class="ti ti-chevrons-left" id="sidebar-toggle-icon" style="font-size: 20px;"></i>
-                </button>
+                <div class="sidebar-top-actions">
+                    <button class="sidebar-action-btn" onclick="toggleFS('viewer-fs')" title="ขยายพื้นที่ทำงานเต็มจอ">
+                        <i class="ti ti-maximize"></i>
+                    </button>
+                    <button class="sidebar-action-btn sidebar-toggle-btn" onclick="toggleSidebar()" title="ยุบ/ขยาย แถบเมนู">
+                        <i class="ti ti-chevrons-left" id="sidebar-toggle-icon"></i>
+                    </button>
+                </div>
 
                 <div class="sidebar-category hide-mobile">ระบบประเมินและศักยภาพ</div>
                 <div class="sidebar-item" onclick="openTool('1. ลักษณะบุคลิกภาพ (นก)', 'https://marketingppac-create.github.io/ppacpasathai/bird.html')" title="1. ลักษณะบุคลิกภาพ (นก)">
@@ -629,14 +644,6 @@
 
             <!-- Main Iframe Area -->
             <main class="viewer-main">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding:0 4px;flex-shrink:0;">
-                <div id="viewer-title" style="font-weight:600;font-size:18px;color:#0F172A;letter-spacing:-0.01em;display:flex;align-items:center;gap:10px;">
-                    เครื่องมือ
-                </div>
-                <button onclick="toggleFS('viewer-fs')" style="background:#fff;border:1px solid #E2E8F0;color:#0F172A;font-size:13px;font-weight:500;padding:8px 18px;border-radius:100px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:.2s;font-family:inherit;box-shadow:0 2px 8px rgba(0,0,0,0.02)" title="ขยายพื้นที่ทำงานเต็มจอ">
-                  ขยาย <i class="ti ti-maximize" style="font-size:16px"></i>
-                </button>
-              </div>
               <div id="viewer-fs" class="iframe-glass">
                 <button class="btn-exit-fs" onclick="toggleFS('viewer-fs')"><i class="ti ti-minimize"></i> ย่อกลับ</button>
                 <iframe id="tool-frame" style="width:100%;height:100%;border:none;background:transparent;" allowfullscreen allow="downloads"></iframe>
@@ -907,7 +914,6 @@ function openTool(name, url) {
   
   const viewer = document.getElementById('tab-viewer');
   viewer.classList.remove('hidden');
-  document.getElementById('viewer-title').textContent = name;
   document.getElementById('tool-frame').src = url;
 
   // จัดการ Highlight สีปุ่มใน Sidebar
